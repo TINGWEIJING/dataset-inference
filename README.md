@@ -10,6 +10,10 @@ The instructions for reproducing the results can be found below.
 The repository is written using `python 3.8`. To install dependencies run the command:
 
 `pip install -r requirements.txt`
+```bash
+conda install pytorch==1.8.1 torchvision==0.9.1 torchaudio cudatoolkit==11.3 -c pytorch -c nvidia -c conda-forge 
+conda clean --all
+```
 
 ## Resolving Ownership
 If you already have the extracted featured for the victim and potentially stolen models, you can proceed to inferring potential theft. A sample `jupyter notebook` to perform the same can be found at:
