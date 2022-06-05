@@ -1,3 +1,11 @@
+# custom folder
+_*
+ting_models
+
+# pytorch
+*.pt
+
+
 *.out
 data/
 files_self/
@@ -12,6 +20,7 @@ code/files/
 files/
 *files*/
 .vscode
+*.pyc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

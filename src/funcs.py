@@ -108,7 +108,7 @@ def get_dataloaders(
             import pickle
             import os
             aux_data_filename = "ti_500K_pseudo_labeled.pickle"
-            aux_path = os.path.join("../data", aux_data_filename)
+            aux_path = os.path.join("./data", aux_data_filename)
             print("Loading data from %s" % aux_path)
             with open(aux_path, 'rb') as f:
                 aux = pickle.load(f)
@@ -193,7 +193,7 @@ def get_dataloaders(
             import pickle
             import os
             aux_data_filename = "ti_500K_pseudo_labeled.pickle"
-            aux_path = os.path.join("../data", aux_data_filename)
+            aux_path = os.path.join("./data", aux_data_filename)
             print("Loading data from %s" % aux_path)
             with open(aux_path, 'rb') as f:
                 aux = pickle.load(f)
@@ -226,6 +226,7 @@ def norms(Z):
 
 def load(model, model_name):
     try:
+        print(model_name)
         model.load_state_dict(torch.load(f"{model_name}.pt"))
     except Exception as e:
         raise e

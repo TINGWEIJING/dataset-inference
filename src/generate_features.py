@@ -355,26 +355,26 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, None]:
 if __name__ == "__main__":
     # restrict GPU
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
     parser = params.parse_args()
     args = parser.parse_args()
     args: AbsArgs = params.add_config(args) if args.config_file != None else args
 
-    sys.stdout = open(f'{args.mode}-{args.model_id}.txt', 'w')
+    # sys.stdout = open(f'{args.mode}-{args.model_id}.txt', 'w')
 
     print(args)
     device = torch.device("cuda:{0}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
 
     # prepare model input dir path
     # root = f"../models/{args.dataset}"
-    root = f"./models/{args.dataset}"
+    root = f"./ting_models/{args.dataset}"
     model_dir = f"{root}/model_{args.model_id}"
     print("Model Directory:", model_dir)
     args.model_dir = model_dir
 
     # prepare feature extration output dir path
-    root = f"../ting_files/{args.dataset}"
+    root = f"./ting_files_2/{args.dataset}"
     file_dir = f"{root}/model_{args.model_id}"
     if args.regressor_embed == 1:
         file_dir += "_cr"

@@ -18,11 +18,11 @@ class AbsArgs:
     normalize: bool
     pseudo_labels: int  # train.py
     concat: int  # train.py
-    opt_type: str # train.py
+    opt_type: str  # train.py
     concat_factor: float  # train.py
-    resume: int # train.py
+    resume: int  # train.py
     epochs: int
-    resume_iter: int # train.py
+    resume_iter: int  # train.py
     gpu_id: int  # default 0
     regressor_embed: int  # default 0
     model_dir: str  # generated
@@ -156,26 +156,73 @@ def parse_args():
                         default=-1)
 
     # Lp Norm Dependent
-    parser.add_argument("--distance", help="Type of Adversarial Perturbation", type=str)  # , choices = ["linf", "l1", "l2", "vanilla"])
-    parser.add_argument("--randomize", help="For the individual attacks", type=int, default=0, choices=[0, 1, 2])
-    parser.add_argument("--alpha_l_1", help="Step Size for L1 attacks", type=float, default=1.0)
-    parser.add_argument("--alpha_l_2", help="Step Size for L2 attacks", type=float, default=0.01)
-    parser.add_argument("--alpha_l_inf", help="Step Size for Linf attacks", type=float, default=0.001)
-    parser.add_argument("--num_iter", help="PGD iterations", type=int, default=500)
+    parser.add_argument("--distance",
+                        help="Type of Adversarial Perturbation",
+                        type=str)  # , choices = ["linf", "l1", "l2", "vanilla"])
+    parser.add_argument("--randomize",
+                        help="For the individual attacks",
+                        type=int,
+                        default=0,
+                        choices=[0, 1, 2])
+    parser.add_argument("--alpha_l_1",
+                        help="Step Size for L1 attacks",
+                        type=float,
+                        default=1.0)
+    parser.add_argument("--alpha_l_2",
+                        help="Step Size for L2 attacks",
+                        type=float,
+                        default=0.01)
+    parser.add_argument("--alpha_l_inf",
+                        help="Step Size for Linf attacks",
+                        type=float,
+                        default=0.001)
+    parser.add_argument("--num_iter",
+                        help="PGD iterations",
+                        type=int,
+                        default=500)
 
-    parser.add_argument("--epsilon_l_1", help="Step Size for L1 attacks", type=float, default=12)
-    parser.add_argument("--epsilon_l_2", help="Epsilon Radius for L2 attacks", type=float, default=0.5)
-    parser.add_argument("--epsilon_l_inf", help="Epsilon Radius for Linf attacks", type=float, default=8/255.)
-    parser.add_argument("--restarts", help="Random Restarts", type=int, default=1)
-    parser.add_argument("--smallest_adv", help="Early Stop on finding adv", type=int, default=1)
-    parser.add_argument("--gap", help="For L1 attack", type=float, default=0.001)
-    parser.add_argument("--k", help="For L1 attack", type=int, default=100)
+    parser.add_argument("--epsilon_l_1",
+                        help="Step Size for L1 attacks",
+                        type=float, default=12)
+    parser.add_argument("--epsilon_l_2",
+                        help="Epsilon Radius for L2 attacks",
+                        type=float, default=0.5)
+    parser.add_argument("--epsilon_l_inf",
+                        help="Epsilon Radius for Linf attacks",
+                        type=float,
+                        default=8/255.)
+    parser.add_argument("--restarts",
+                        help="Random Restarts",
+                        type=int,
+                        default=1)
+    parser.add_argument("--smallest_adv",
+                        help="Early Stop on finding adv",
+                        type=int,
+                        default=1)
+    parser.add_argument("--gap",
+                        help="For L1 attack",
+                        type=float,
+                        default=0.001)
+    parser.add_argument("--k",
+                        help="For L1 attack",
+                        type=int,
+                        default=100)
 
     # TEST
-    parser.add_argument("--path", help="Path for test model load", type=str, default=None)
-    parser.add_argument("--feature_type", help="Feature type for generation", type=str, default='mingd', choices=['pgd', 'topgd', 'mingd', 'rand'])
+    parser.add_argument("--path",
+                        help="Path for test model load",
+                        type=str,
+                        default=None)
+    parser.add_argument("--feature_type",
+                        help="Feature type for generation",
+                        type=str, default='mingd',
+                        choices=['pgd', 'topgd', 'mingd', 'rand'])
 
-    parser.add_argument("--regressor_embed", help="Victim Embeddings for training regressor", type=int, default=0, choices=[0, 1])
+    parser.add_argument("--regressor_embed",
+                        help="Victim Embeddings for training regressor",
+                        type=int,
+                        default=0,
+                        choices=[0, 1])
 
     return parser
 

@@ -172,7 +172,8 @@ def rand_steps(model, X, y, args, target=None):
             if t > 0:
                 preds = model(X_r+delta_r)
                 new_remaining = (preds.max(1)[1] == y[remaining])
-                remaining[remaining] = new_remaining
+                remaining_temp = remaining.clone()
+                remaining[remaining_temp] = new_remaining
             else:
                 preds = model(X+delta)
                 remaining = (preds.max(1)[1] == y)

@@ -225,10 +225,10 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            widen_factor=10,
                            normalize=args.normalize,
                            dropRate=0.3)
-        # teacher = nn.DataParallel(teacher).to(args.device) if args.dataset != "SVHN" else teacher.to(args.device)
-        teacher = teacher.to(args.device)
+        teacher = nn.DataParallel(teacher).to(args.device) if args.dataset != "SVHN" else teacher.to(args.device)
+        # teacher = teacher.to(args.device)
         teacher_dir = "model_teacher_normalized" if args.normalize else "model_teacher_unnormalized"
-        path = f"../models/{args.dataset}/{teacher_dir}/final"
+        path = f"./ting_models/{args.dataset}/{teacher_dir}/final"
         teacher = load(teacher, path)
         teacher.eval()
 
@@ -237,9 +237,9 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            depth=deep_half,
                            widen_factor=w_f,
                            normalize=args.normalize)
-        path = f"../models/{args.dataset}/wrn-16-1/Base/STUDENT3"
+        path = f"./models/{args.dataset}/wrn-16-1/Base/STUDENT3"
         student.load_state_dict(torch.load(f"{path}.pth", map_location=device))
-        # student = nn.DataParallel(student).to(args.device)
+        student = nn.DataParallel(student).to(args.device)
         student = student.to(args.device)
         student.eval()
         raise("Network needs to be un-normalized")
@@ -253,10 +253,10 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            depth=deep_full,
                            widen_factor=10,
                            normalize=args.normalize)
-        # student = nn.DataParallel(student).to(args.device) if args.dataset != "SVHN" else student.to(args.device)
-        student = student.to(args.device) if args.dataset != "SVHN" else student.to(args.device)
+        student = nn.DataParallel(student).to(args.device) if args.dataset != "SVHN" else student.to(args.device)
+        # student = student.to(args.device) if args.dataset != "SVHN" else student.to(args.device)
         teacher_dir = "model_teacher_normalized" if args.normalize else "model_teacher_unnormalized"
-        path = f"../models/{args.dataset}/{teacher_dir}/final"
+        path = f"./ting_models/{args.dataset}/{teacher_dir}/final"
         student = load(student, path)
         student.train()
         assert(args.pseudo_labels)
@@ -271,7 +271,8 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            widen_factor=w_f,
                            normalize=args.normalize)
         # student = nn.DataParallel(student).to(args.device)
-        student = student.to(args.device)
+        student = nn.DataParallel(student).to(args.device)
+        # student = student.to(args.device)
         student.train()
         assert(args.pseudo_labels)
 
@@ -284,15 +285,17 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            widen_factor=w_f,
                            normalize=args.normalize,
                            dropRate=dR)
-        # student = nn.DataParallel(student).to(args.device)
-        student = student.to(args.device)
+        # student = nn.DataParallel(student, device_ids=[2, 3]).to(args.device)
+        student = nn.DataParallel(student).to(args.device)
+        # student = student.to(args.device)
         student.train()
 
     elif mode == "pre-act-18":
         student = PreActResNet18(num_classes=args.num_classes,
                                  normalize=args.normalize)
         # student = nn.DataParallel(student).to(args.device)
-        student = student.to(args.device)
+        student = nn.DataParallel(student).to(args.device)
+        # student = student.to(args.device)
         student.train()
 
     else:  # teacher
@@ -304,7 +307,8 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            normalize=args.normalize,
                            dropRate=0.3)
         # student = nn.DataParallel(student, device_ids = [3, 2, 1, 0]).to(args.device) # set primary device
-        student.to(args.device)
+        student = nn.DataParallel(student).to(args.device)
+        # student.to(args.device)
         student.train()
         # Alternate student models: [lr_max = 0.01, epochs = 100], [preactresnet], [dropRate]
 
@@ -321,11 +325,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args: AbsArgs = params.add_config(args) if args.config_file != None else args
     print(args)
-    # device = torch.device("cuda:{0}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
-    device = torch.device("cuda:{0}".format(3) if torch.cuda.is_available() else "cpu")  # manual setting
+    device = torch.device("cuda:{0}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda:{0}".format(3) if torch.cuda.is_available() else "cpu")  # manual setting
 
     # prepare model output dir path
-    root = f"../models/{args.dataset}"
+    root = f"./ting_models/{args.dataset}"
     model_dir = f"{root}/model_{args.model_id}"
     print("Model Directory:", model_dir)
     if args.concat:
