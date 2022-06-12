@@ -373,6 +373,9 @@ nohup ./lazy_fg.sh &> log_01.txt &
 ps aux | grep -i 'python3'
 ps aux | grep -i 'generate_features.py'
 kill ##
+
+# fixed GPU used
+export CUDA_VISIBLE_DEVICES=1,2
 ```
 
 ## Links
@@ -407,3 +410,152 @@ Objective2: To classify whether a person is wearing face mask based on the detec
 | Extract Logit          | WideResNet     | 64         | 15     |
 | Distillation           | WideResNet     | 64         | 50     |
 | Different Architecture | PreActResNet18 | 64         | 50     |
+
+
+## Cat Dogs
+### Training Commands
+```bash
+nohup ./lazy_cat_dog_train_01.sh &> log_lazy_cat_dog_train_01.txt &
+ps aux | grep -i 'python3'
+ps aux | grep -i './src/train.py'
+
+export CUDA_VISIBLE_DEVICES=1,2
+
+python ./src/train.py \
+  --batch_size 512 \
+  --mode teacher \
+  --normalize 1 \
+  --model_id teacher_normalized \
+  --lr_mode 2 \
+  --epochs 50 \
+  --dataset CIFAR10-Cat-Dog \
+  --dropRate 0.3 \
+  --pseudo_labels 0 \
+  --use_data_parallel
+
+## start
+
+python ./src/train.py \
+  --batch_size 512 \
+  --mode teacher \
+  --normalize 1 \
+  --model_id teacher_normalized \
+  --lr_mode 2 \
+  --epochs 50 \
+  --dataset STL10-Cat-Dog \
+  --dropRate 0.3 \
+  --pseudo_labels 0 \
+  --use_data_parallel
+
+python ./src/train.py \
+  --batch_size 512 \
+  --mode teacher \
+  --normalize 1 \
+  --model_id teacher_normalized \
+  --lr_mode 2 \
+  --epochs 50 \
+  --dataset Kaggle-Cat-Dog \
+  --dropRate 0.3 \
+  --pseudo_labels 0 \
+  --use_data_parallel
+
+python ./src/train.py \
+  --batch_size 512 \
+  --mode teacher \
+  --normalize 1 \
+  --model_id teacher_normalized \
+  --lr_mode 2 \
+  --epochs 50 \
+  --dataset CIFAR10-STL10-Cat-Dog \
+  --dropRate 0.3 \
+  --pseudo_labels 0 \
+  --use_data_parallel
+
+python ./src/train.py \
+  --batch_size 512 \
+  --mode teacher \
+  --normalize 1 \
+  --model_id teacher_normalized \
+  --lr_mode 2 \
+  --epochs 50 \
+  --dataset CIFAR10-Kaggle-Cat-Dog \
+  --dropRate 0.3 \
+  --pseudo_labels 0 \
+  --use_data_parallel
+
+python ./src/train.py \
+  --batch_size 512 \
+  --mode teacher \
+  --normalize 1 \
+  --model_id teacher_normalized \
+  --lr_mode 2 \
+  --epochs 50 \
+  --dataset STL10-Kaggle-Cat-Dog \
+  --dropRate 0.3 \
+  --pseudo_labels 0 \
+  --use_data_parallel
+
+python ./src/train.py \
+  --batch_size 512 \
+  --mode teacher \
+  --normalize 1 \
+  --model_id teacher_normalized \
+  --lr_mode 2 \
+  --epochs 50 \
+  --dataset CIFAR10-STL10-Kaggle-Cat-Dog \
+  --dropRate 0.3 \
+  --pseudo_labels 0 \
+  --use_data_parallel
+
+# testing
+python ./src/train.py \
+  --batch_size 1024 \
+  --mode teacher \
+  --normalize 1 \
+  --model_id test_teacher_normalized \
+  --lr_mode 4 \
+  --epochs 2 \
+  --dataset STL10-Kaggle-Cat-Dog \
+  --lr_max 0.01 \
+  --pseudo_labels 0 \
+  --use_data_parallel
+
+# CIFAR10-Cat-Dog
+# STL10-Cat-Dog
+# Kaggle-Cat-Dog
+# CIFAR10-STL10-Cat-Dog
+# CIFAR10-Kaggle-Cat-Dog
+# STL10-Kaggle-Cat-Dog
+# CIFAR10-STL10-Kaggle-Cat-Dog
+```
+
+### Features Commands
+```bash
+nohup ./lazy_cat_dog_feature_01.sh &> log_lazy_cat_dog_feature_01.txt &
+ps aux | grep -i 'python3'
+ps aux | grep -i './src/generate_features.py'
+
+export CUDA_VISIBLE_DEVICES=1,2
+
+# test
+python ./src/generate_features.py \
+  --feature_type rand \
+  --dataset CIFAR10-Cat-Dog \
+  --victim_dataset CIFAR10-Cat-Dog \
+  --batch_size 256 \
+  --mode teacher \
+  --normalize 1 \
+  --model_id teacher_normalized
+```
+
+### Other commands
+```bash
+rm -r ./folder
+cp -r ./src/. ./dst
+zip -r compressed.zip ./folder
+unzip -l _model.zip
+scp -P 9413 "tingweijing@ssh.jiuntian.com:/data/weijing/ting-dataset-inference/_model.zip" "/home/ting/Downloads/"
+scp -P 9413 "tingweijing@ssh.jiuntian.com:/data/weijing/ting-dataset-inference/_feature.zip" "/home/ting/Downloads/"
+
+ls -aR | grep ":$" | perl -pe 's/:$//;s/[^-][^\/]*\//    /g;s/^    (\S)/└── \1/;s/(^    |    (?= ))/│   /g;s/    (\S)/└── \1/
+```

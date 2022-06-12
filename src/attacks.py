@@ -8,7 +8,8 @@ import time
 
 from tqdm import tqdm
 
-from params import AbsArgs
+from params import Args
+from utils.logger import Unbuffered
 
 
 cifar10_mean = (0.4914, 0.4822, 0.4465)
@@ -143,6 +144,9 @@ def mingd_unoptimized(model, X, y, args, target):
 
 
 def rand_steps(model, X, y, args, target=None):
+    # output stream
+    bothout = Unbuffered()
+
     # optimized implementation to only query remaining points
     del target  # The attack does not use the targets
     start = time.time()
@@ -190,13 +194,16 @@ def rand_steps(model, X, y, args, target=None):
             delta_r.data = torch.min(torch.max(delta_r.detach(), -X_r), 1-X_r)  # clip X+delta_r[remaining] to [0,1]
             delta[remaining] = delta_r.detach()
 
-        print(f"Number of steps = {t+1} | Failed to convert = {(model(X+delta).max(1)[1]==y).sum().item()} | Time taken = {time.time() - start}")
+        print(f"Number of steps = {t+1} | Failed to convert = {(model(X+delta).max(1)[1]==y).sum().item()} | Time taken = {time.time() - start}",
+              file=bothout)
     if is_training:
         model.train()
     return delta
 
 
-def mingd(model: torch.nn.Module, X, y, args: AbsArgs, target) -> torch.Tensor:
+def mingd(model: torch.nn.Module, X, y, args: Args, target) -> torch.Tensor:
+    # output stream
+    bothout = Unbuffered()
     # x: [64, 3, 32, 32]
     start = time.time()
     is_training = model.training
@@ -216,13 +223,13 @@ def mingd(model: torch.nn.Module, X, y, args: AbsArgs, target) -> torch.Tensor:
             # remaining[remaining] = new_remaining # fix unsupported operation
             remaining[remaining_temp] = new_remaining
         else:
-            preds = model(X+delta) # [64, 10]
-            remaining = (preds.max(1)[1] != target) # [64] boolean tensor
+            preds = model(X+delta)  # [64, 10]
+            remaining = (preds.max(1)[1] != target)  # [64] boolean tensor
 
         if remaining.sum() == 0:
             break
 
-        X_r = X[remaining] # [remaining wrong pred samples, 3, 32, 32]
+        X_r = X[remaining]  # [remaining wrong pred samples, 3, 32, 32]
         delta_r = delta[remaining]
         delta_r.requires_grad = True
         preds = model(X_r + delta_r)
@@ -240,7 +247,8 @@ def mingd(model: torch.nn.Module, X, y, args: AbsArgs, target) -> torch.Tensor:
         delta_r.grad.zero_()
         delta[remaining] = delta_r.detach()
 
-    print(f"Number of steps = {t+1} | Failed to convert = {(model(X+delta).max(1)[1]!=target).sum().item()} | Time taken = {time.time() - start}")
+    print(f"Number of steps = {t+1} | Failed to convert = {(model(X+delta).max(1)[1]!=target).sum().item()} | Time taken = {time.time() - start}",
+          file=bothout)
     if is_training:
         model.train()
     return delta

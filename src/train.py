@@ -2,18 +2,24 @@ from __future__ import absolute_import
 import sys
 import time
 import argparse
+from typing import Callable
 import ipdb
 import params
 import glob
 import os
 import json
-from params import AbsArgs
 import numpy as np
+from datetime import datetime, timedelta
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from funcs import *
 from models import *
+from pathlib import Path
+from params import Args
+from utils.logger import Unbuffered
+from torchvision.models import mobilenet_v3_large
 
 '''Threat Models'''
 # A) complete model theft
@@ -29,7 +35,10 @@ from models import *
 # D) Train a teacher model on a separate dataset (test set)
 
 
-def step_lr(lr_max, epoch, num_epochs):
+def step_lr(lr_max: float, epoch: int, num_epochs: int) -> float:
+    '''
+    Step learning rate mentioned in author paper in `6.1 MODEL STEALING ATTACK (pg07)`
+    '''
     ratio = epoch/float(num_epochs)
     if ratio < 0.3:
         return lr_max
@@ -41,17 +50,30 @@ def step_lr(lr_max, epoch, num_epochs):
         return lr_max*0.2*0.2*0.2
 
 
-def lr_scheduler(args):
+def lr_scheduler(args: Args) -> Callable[[int], int]:
+    '''
+    Custom lr scheduler implemented by author
+    '''
     if args.lr_mode == 0:
-        def lr_schedule(t): return np.interp([t], [0, args.epochs*2//5, args.epochs*4//5, args.epochs], [args.lr_max, args.lr_max*0.2, args.lr_max*0.04, args.lr_max*0.008])[0]
+        def lr_schedule(t):
+            return np.interp([t], [0, args.epochs*2//5, args.epochs*4//5, args.epochs], [args.lr_max, args.lr_max*0.2, args.lr_max*0.04, args.lr_max*0.008])[0]
+
     elif args.lr_mode == 1:
-        def lr_schedule(t): return np.interp([t], [0, args.epochs//2, args.epochs], [args.lr_min, args.lr_max, args.lr_min])[0]
-    elif args.lr_mode == 2:
-        def lr_schedule(t): return np.interp([t], [0, args.epochs*2//5, args.epochs*4//5, args.epochs], [args.lr_min, args.lr_max, args.lr_max/10, args.lr_min])[0]
+        def lr_schedule(t):
+            return np.interp([t], [0, args.epochs//2, args.epochs], [args.lr_min, args.lr_max, args.lr_min])[0]
+
+    elif args.lr_mode == 2:  # ! used in sample run
+        def lr_schedule(t):
+            return np.interp([t], [0, args.epochs*2//5, args.epochs*4//5, args.epochs], [args.lr_min, args.lr_max, args.lr_max/10, args.lr_min])[0]
+
     elif args.lr_mode == 3:
-        def lr_schedule(t): return np.interp([t], [0, args.epochs*2//5, args.epochs*4//5, args.epochs], [args.lr_max, args.lr_max, args.lr_max/5., args.lr_max/10.])[0]
-    elif args.lr_mode == 4:
-        def lr_schedule(t): return step_lr(args.lr_max, t, args.epochs)
+        def lr_schedule(t):
+            return np.interp([t], [0, args.epochs*2//5, args.epochs*4//5, args.epochs], [args.lr_max, args.lr_max, args.lr_max/5., args.lr_max/10.])[0]
+
+    elif args.lr_mode == 4:  # ! mentioned in the paper
+        def lr_schedule(t):
+            return step_lr(args.lr_max, t, args.epochs)
+
     return lr_schedule
 
 
@@ -64,7 +86,7 @@ def epoch(args,
           lr_schedule=None,
           epoch_i=None,
           opt=None,
-          stop=False):
+          stop=False) -> Tuple[float, float]:
     # For A.3, B.1, B.2, C.1, C.2
     """Training/evaluation epoch over the dataset"""
     # Teacher is none for C.2, B.1, A.3
@@ -77,6 +99,7 @@ def epoch(args,
     func = tqdm if stop == False else lambda x: x
     criterion_kl = nn.KLDivLoss(reduction="batchmean")
     alpha, T = 1.0, 1.0
+    loss: torch.Tensor
 
     for batch in func(loader):
         X, y = batch[0].to(args.device), batch[1].to(args.device)
@@ -111,7 +134,7 @@ def epoch(args,
     return train_loss / train_n, train_acc / train_n
 
 
-def epoch_test(args: AbsArgs,
+def epoch_test(args: Args,
                loader: DataLoader,
                model: torch.nn.Module,
                stop=False) -> Tuple[float, float]:
@@ -136,48 +159,49 @@ def epoch_test(args: AbsArgs,
     return test_loss / test_n, test_acc / test_n
 
 
-epoch_adversarial = epoch
-
-
-def trainer(args: AbsArgs):
+def trainer(args: Args):
     '''
+    Originally named `trainer`. \\
+    TODO: change function name
     '''
+    # output stream
+    bothout = Unbuffered()
+
+    # load pytorch dataloaders for training & testing datasets
     train_loader, test_loader = get_dataloaders(args.dataset,
                                                 args.batch_size,
+                                                normalize=args.normalize,
+                                                download=args.download_dataset,
                                                 pseudo_labels=args.pseudo_labels,
                                                 concat=args.concat,
                                                 concat_factor=args.concat_factor)
+
+    # ? Not sure why swap, the paper mentioned using private dataset
     if args.mode == "independent":
         train_loader, test_loader = test_loader, train_loader
 
-    def myprint(a):
-        '''
-        Print to console & write to logs.txt file
-        '''
-        print(a)
-        file.write(a)
-        file.write("\n")
-        file.flush()
-
-    file = open(f"{args.model_dir}/logs.txt", "w")
-
+    # load student & teacher model
     student, teacher = get_student_teacher(args)
+
+    # optimizer
     if args.opt_type == "SGD":
         opt = optim.SGD(student.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
     else:
         opt = optim.Adam(student.parameters(), lr=0.1)
 
+    # learning rate scheduler
     lr_schedule = lr_scheduler(args)
-    t_start = 0
+    t_start = 0  # represent iteration/epoch starting number
 
+    # TODO: test resume script
     if args.resume:
         location = f"{args.model_dir}/iter_{str(args.resume_iter)}.pt"
         t_start = args.resume_iter + 1
         student.load_state_dict(torch.load(location, map_location=device))
 
-    train_func = epoch
     for t in range(t_start, args.epochs):
-        lr = lr_schedule(t)
+        lr = lr_schedule(t)  # get current lr value for reference
+
         student.train()
         train_loss, train_acc = epoch(args,
                                       train_loader,
@@ -186,21 +210,27 @@ def trainer(args: AbsArgs):
                                       lr_schedule=lr_schedule,
                                       epoch_i=t,
                                       opt=opt)
+
         student.eval()
         test_loss, test_acc = epoch_test(args,
                                          test_loader,
                                          student)
-        myprint(f'Epoch: {t}, Train Loss: {train_loss:.3f} Train Acc: {train_acc:.3f} Test Acc: {test_acc:.3f}, lr: {lr:.5f}')
 
+        print(f'Epoch: {t}, Train Loss: {train_loss:.3f} Train Acc: {train_acc:.3f} lr: {lr:.5f}',
+              file=bothout)
+        print(f'Epoch: {t}, Train Loss: {test_loss:.3f} Test Acc: {test_acc:.3f}',
+              file=bothout)
+
+        # ! The paper didn't use MNIST datasets, this is for testing I guess
         if args.dataset == "MNIST":
-            torch.save(student.state_dict(), f"{args.model_dir}/iter_{t}.pt")
-        elif (t+1) % 25 == 0:
-            torch.save(student.state_dict(), f"{args.model_dir}/iter_{t}.pt")
+            torch.save(student.state_dict(), f"{args.model_complete_dir_path}/iter_{t}.pt")
+        elif (t+1) % 25 == 0:  # save every 25 iteration
+            torch.save(student.state_dict(), f"{args.model_complete_dir_path}/iter_{t}.pt")
 
-    torch.save(student.state_dict(), f"{args.model_dir}/final.pt")
+    torch.save(student.state_dict(), f"{args.model_complete_dir_path}/final.pt")
 
 
-def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module]:
+def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, torch.nn.Module]:
     '''
     Prepare student (threat) model architecture based on `args.dataset` and `args.mode` for training
     '''
@@ -209,7 +239,7 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                   "CIFAR100": WideResNet,
                   "AFAD": resnet34,
                   "SVHN": ResNet_8x}
-    Net_Arch: nn.Module = net_mapper[args.dataset]
+    Net_Arch: nn.Module = net_mapper.get(args.dataset, WideResNet) # ! Use WideResNet otherwise
     mode = args.mode
     # ['zero-shot', 'fine-tune', 'extract-label', 'extract-logit', 'distillation', 'teacher']
     deep_full = 34 if args.dataset in ["SVHN", "AFAD"] else 28
@@ -225,8 +255,12 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            widen_factor=10,
                            normalize=args.normalize,
                            dropRate=0.3)
-        teacher = nn.DataParallel(teacher).to(args.device) if args.dataset != "SVHN" else teacher.to(args.device)
-        # teacher = teacher.to(args.device)
+        # TODO: check parallel
+        if args.dataset != "SVHN":
+            if args.use_data_parallel and torch.cuda.device_count() > 1:
+                teacher = nn.DataParallel(teacher)
+        teacher.to(args.device)
+        # teacher = nn.DataParallel(teacher).to(args.device) if args.dataset != "SVHN" else teacher.to(args.device)
         teacher_dir = "model_teacher_normalized" if args.normalize else "model_teacher_unnormalized"
         path = f"./ting_models/{args.dataset}/{teacher_dir}/final"
         teacher = load(teacher, path)
@@ -237,10 +271,15 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            depth=deep_half,
                            widen_factor=w_f,
                            normalize=args.normalize)
+        # TODO: ask author how to get this
         path = f"./models/{args.dataset}/wrn-16-1/Base/STUDENT3"
         student.load_state_dict(torch.load(f"{path}.pth", map_location=device))
-        student = nn.DataParallel(student).to(args.device)
-        student = student.to(args.device)
+
+        # TODO: check parallel
+        if args.use_data_parallel and torch.cuda.device_count() > 1:
+            student = nn.DataParallel(student)
+        student.to(args.device)
+        # student = nn.DataParallel(student).to(args.device)
         student.eval()
         raise("Network needs to be un-normalized")
     elif mode == "prune":
@@ -253,8 +292,14 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            depth=deep_full,
                            widen_factor=10,
                            normalize=args.normalize)
-        student = nn.DataParallel(student).to(args.device) if args.dataset != "SVHN" else student.to(args.device)
-        # student = student.to(args.device) if args.dataset != "SVHN" else student.to(args.device)
+
+        # TODO: check parallel
+        if args.dataset != "SVHN":
+            if args.use_data_parallel and torch.cuda.device_count() > 1:
+                student = nn.DataParallel(student)
+        student.to(args.device)
+        # student = nn.DataParallel(student).to(args.device) if args.dataset != "SVHN" else student.to(args.device)
+        # TODO: change model path
         teacher_dir = "model_teacher_normalized" if args.normalize else "model_teacher_unnormalized"
         path = f"./ting_models/{args.dataset}/{teacher_dir}/final"
         student = load(student, path)
@@ -270,9 +315,11 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            depth=deep_half,
                            widen_factor=w_f,
                            normalize=args.normalize)
+        # TODO: check parallel
+        if args.use_data_parallel and torch.cuda.device_count() > 1:
+            student = nn.DataParallel(student)
+        student.to(args.device)
         # student = nn.DataParallel(student).to(args.device)
-        student = nn.DataParallel(student).to(args.device)
-        # student = student.to(args.device)
         student.train()
         assert(args.pseudo_labels)
 
@@ -285,30 +332,39 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
                            widen_factor=w_f,
                            normalize=args.normalize,
                            dropRate=dR)
-        # student = nn.DataParallel(student, device_ids=[2, 3]).to(args.device)
-        student = nn.DataParallel(student).to(args.device)
-        # student = student.to(args.device)
+        # TODO: check parallel
+        if args.use_data_parallel and torch.cuda.device_count() > 1:
+            student = nn.DataParallel(student)
+        student.to(args.device)
+        # student = nn.DataParallel(student).to(args.device)
         student.train()
 
     elif mode == "pre-act-18":
         student = PreActResNet18(num_classes=args.num_classes,
                                  normalize=args.normalize)
+        # TODO: check parallel
+        if args.use_data_parallel and torch.cuda.device_count() > 1:
+            student = nn.DataParallel(student)
+        student.to(args.device)
         # student = nn.DataParallel(student).to(args.device)
-        student = nn.DataParallel(student).to(args.device)
-        # student = student.to(args.device)
         student.train()
 
     else:  # teacher
         # python train.py --batch_size 1000 --mode teacher --normalize 0 --model_id teacher_unnormalized --lr_mode 2 --epochs 100 --dataset CIFAR10 --dropRate 0.3
         # python train.py --batch_size 1000 --mode teacher --normalize 1 --model_id teacher_normalized --lr_mode 2 --epochs 100 --dataset CIFAR10 --dropRate 0.3
+        # TODO: change back
         student = Net_Arch(n_classes=args.num_classes,
                            depth=deep_full,
                            widen_factor=10,
                            normalize=args.normalize,
                            dropRate=0.3)
-        # student = nn.DataParallel(student, device_ids = [3, 2, 1, 0]).to(args.device) # set primary device
-        student = nn.DataParallel(student).to(args.device)
-        # student.to(args.device)
+        # student = mobilenet_v3_large(pretrained=False)
+        # student.classifier[-1] = nn.Linear(1280, args.num_classes)
+        # TODO: check parallel
+        if args.use_data_parallel and torch.cuda.device_count() > 1:
+            student = nn.DataParallel(student)
+        student.to(args.device)
+        # student = nn.DataParallel(student).to(args.device)
         student.train()
         # Alternate student models: [lr_max = 0.01, epochs = 100], [preactresnet], [dropRate]
 
@@ -318,35 +374,75 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, torch.nn.Module
 # srun --partition rtx6000 --gres=gpu:4 -c 40 --mem=40G python train.py --batch_size 1000 --mode teacher --normalize 0 --model_id teacher_unnormalized --lr_mode 2 --epochs 100 --dataset CIFAR10
 if __name__ == "__main__":
     # restrict GPU
-    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # force reorder
+    # TODO: add CUDA_VISIBLE_DEVICES into params config
     # os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
-    parser = params.parse_args()
-    args = parser.parse_args()
-    args: AbsArgs = params.add_config(args) if args.config_file != None else args
-    print(args)
-    device = torch.device("cuda:{0}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
-    # device = torch.device("cuda:{0}".format(3) if torch.cuda.is_available() else "cpu")  # manual setting
+    # parse command options
+    args: Args = Args().parse_args()
+
+    # load config file if provided
+    # TODO: test load config file
+    if args.config_file is not None:
+        args.load(args.config_file)
+
+    # decide device
+    device = torch.device(f'cuda:{args.gpu_id}' if torch.cuda.is_available() else 'cpu')
 
     # prepare model output dir path
-    root = f"./ting_models/{args.dataset}"
-    model_dir = f"{root}/model_{args.model_id}"
-    print("Model Directory:", model_dir)
+    # TODO: change to parent folder
+    cwd = Path.cwd()
+
+    # TODO: add model output option
+    model_dir_path = cwd / "_model"
+    model_dataset_cat_dir_path = model_dir_path / f"{args.dataset}"
+    model_complete_dir_path = model_dataset_cat_dir_path / f"model_{args.model_id}"
+
+    # root = f"./ting_models/{args.dataset}"
+    # model_dir = f"{root}/model_{args.model_id}"
+
     if args.concat:
-        model_dir += f"concat_{args.concat_factor}"
-    args.model_dir = model_dir
-    if(not os.path.exists(model_dir)):
-        os.makedirs(model_dir)
+        # model_dir += f"concat_{args.concat_factor}"
+        model_complete_dir_path = model_dataset_cat_dir_path / f"model_{args.model_id}_concat_{args.concat_factor}"
 
-    with open(f"{model_dir}/model_info.txt", "w") as f:
-        json.dump(args.__dict__, f, indent=2)
+    args.model_complete_dir_path = model_complete_dir_path
 
+    # create folder if not exists
+    model_complete_dir_path.mkdir(parents=True, exist_ok=True)
+
+    # TODO: change type in Args class
     args.device = device
-    print(device)
+
+    # TODO: use set all seed
     torch.cuda.set_device(device)
     torch.manual_seed(args.seed)
 
-    n_class = {"CIFAR10": 10, "CIFAR100": 100, "AFAD": 26, "SVHN": 10, "ImageNet": 1000}
+    n_class = {
+        "CIFAR10": 10,
+        "CIFAR100": 100,
+        "AFAD": 26,
+        "SVHN": 10,
+        "ImageNet": 1000,
+        "CIFAR10-Cat-Dog": 2,
+        "STL10-Cat-Dog": 2,
+        "Kaggle-Cat-Dog": 2,
+        "CIFAR10-STL10-Cat-Dog": 2,
+        "CIFAR10-Kaggle-Cat-Dog": 2,
+        "STL10-Kaggle-Cat-Dog": 2,
+        "CIFAR10-STL10-Kaggle-Cat-Dog": 2,
+    }
     args.num_classes = n_class[args.dataset]
-    print(torch.cuda.current_device())
+
+    # save config
+    args.save(path=model_complete_dir_path / "train_config.json")
+
+    # setup output stream
+    bothout = Unbuffered(file_path=model_complete_dir_path / "logs.txt")
+
+    TIMESTAMP = (datetime.utcnow() + timedelta(hours=8)).strftime("%y-%m-%d %H:%M")
+    print(TIMESTAMP, file=bothout)
+    startTime = time.process_time()
+    print("Model Directory:", model_complete_dir_path, file=bothout)
     trainer(args)
+    endTime = time.process_time()
+    print(f"Time taken: {endTime - startTime:.2f} s", file=bothout)

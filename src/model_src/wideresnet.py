@@ -149,10 +149,10 @@ class WideResNet(nn.Module):
 
     def forward(self, x):
         #Normalize 
-        if self.normalize: 
-            mu = self.mu.to(x.device)
-            std = self.std.to(x.device)
-            x = (x-mu)/std
+        # if self.normalize: 
+        #     mu = self.mu.to(x.device)
+        #     std = self.std.to(x.device)
+        #     x = (x-mu)/std
         x = self.conv1(x)
         attention1 = self.block1(x)
         attention2 = self.block2(attention1)
@@ -161,5 +161,6 @@ class WideResNet(nn.Module):
         out = self.activation(out)
         out = self.avg_pool(out)
         out = out.view(-1, self.out_filters)
-
-        return self.fc(out)#, attention1, attention2, attention3
+        out = self.fc(out)
+        # return self.fc(out)#, attention1, attention2, attention3
+        return out
