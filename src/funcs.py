@@ -1,22 +1,25 @@
+import copy
 import os
+import random
+import sys
 from typing import Tuple
 
+import ipdb
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-import ipdb
-import random
+import torch.optim as optim
 import torchvision
+from torch.utils.data import ConcatDataset, DataLoader, Dataset
+from torchvision import datasets, transforms
 from torchvision.datasets.folder import pil_loader
 from tqdm import tqdm
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader, Dataset
+
 from attacks import *
-import pandas as pd
-import copy
-import sys
+from dataset import (get_cifar_cat_dog_dataset, get_kaggle_cat_dog_dataset,
+                     get_stl10_cat_dog_dataset)
 
 
 class PseudoDataset(torch.utils.data.Dataset):
@@ -71,6 +74,7 @@ def get_dataloaders(
         normalize=False,
         train_shuffle=True,
         concat=False,
+        download=True,
         concat_factor=1.0) -> 'Tuple[DataLoader, DataLoader]':
     '''
     Get correspond training & testing dataloader from `dataset` type
@@ -90,6 +94,7 @@ def get_dataloaders(
         if not train_shuffle:
             print("No Transform")
             transform_train = transform_test
+        # TODO: change data_source path
         cifar_train = data_source("../../data", train=True, download=True, transform=transform_train)
         cifar_test = data_source("../../data", train=False, download=True, transform=transform_test)
         train_loader = DataLoader(cifar_train,
@@ -105,8 +110,8 @@ def get_dataloaders(
             transform_train = transforms.Compose([transforms.ToTensor(),
                                                   transforms.Lambda(lambda x: x.float())])
 
-            import pickle
             import os
+            import pickle
             aux_data_filename = "ti_500K_pseudo_labeled.pickle"
             aux_path = os.path.join("./data", aux_data_filename)
             print("Loading data from %s" % aux_path)
@@ -118,7 +123,7 @@ def get_dataloaders(
             cifar_train = PseudoDataset(aux_data, aux_targets, transform=transform_train)
             train_loader = DataLoader(cifar_train, batch_size=batch_size, shuffle=train_shuffle)
 
-    if dataset == "MNIST":
+    elif dataset == "MNIST":
         tr_normalize = transforms.Normalize((0.1307,), (0.3081,)) if normalize else transforms.Lambda(lambda x: x)
         transform_train = transforms.Compose([transforms.ToTensor(),
                                               tr_normalize])
@@ -132,6 +137,164 @@ def get_dataloaders(
         test_loader = DataLoader(mnist_test,
                                  batch_size=batch_size,
                                  shuffle=False)
+
+    elif dataset in ["CIFAR10-Cat-Dog",
+                   "STL10-Cat-Dog",
+                   "Kaggle-Cat-Dog",
+                   "CIFAR10-STL10-Cat-Dog",
+                   "CIFAR10-Kaggle-Cat-Dog",
+                   "STL10-Kaggle-Cat-Dog",
+                   "CIFAR10-STL10-Kaggle-Cat-Dog", ]:
+
+        normalize_value_map = {
+            "CIFAR10-Cat-Dog": [
+                (0.49814836, 0.46096534, 0.41648629),
+                (0.24817469, 0.24257439, 0.24812133),
+            ],
+            "STL10-Cat-Dog": [
+                (0.46472397, 0.43562145, 0.3815738),
+                (0.24546842, 0.23831429, 0.24208598),
+            ],
+            "Kaggle-Cat-Dog": [
+                (0.48831935, 0.45507484, 0.41695894),
+                (0.25718583, 0.25055564, 0.25318538),
+            ],
+            "CIFAR10-STL10-Cat-Dog": [
+                (0.49510978, 0.45866135, 0.41331243),
+                (0.24811601, 0.24229977, 0.2477821),
+            ],
+            "CIFAR10-Kaggle-Cat-Dog": [
+                (0.49112764, 0.45675784, 0.4168239),
+                (0.25468247, 0.24831572, 0.25174899),
+            ],
+            "STL10-Kaggle-Cat-Dog": [
+                (0.48741184, 0.45432663, 0.41559797),
+                (0.25678514, 0.25012388, 0.25285907),
+            ],
+            "CIFAR10-STL10-Kaggle-Cat-Dog": [
+                (0.4903942, 0.45617072, 0.41584473),
+                (0.25446803, 0.24806767, 0.2515523),
+            ],
+        }
+        tr_normalize = transforms.Normalize(*normalize_value_map[dataset]) if normalize else transforms.Lambda(lambda x: x)
+
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+            tr_normalize,
+            transforms.Lambda(lambda x: x.float())
+        ])
+
+        transform_test = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+            tr_normalize,
+            transforms.Lambda(lambda x: x.float())
+        ])
+
+        # cifar_cat_dog_dataset = get_cifar_cat_dog_dataset(transform=transform_train)
+        # stl10_cat_dog_dataset = get_stl10_cat_dog_dataset(transform=transform_train)
+        # kaggle_cat_dog_dataset = get_kaggle_cat_dog_dataset(transform=transform_train)
+
+        test_dataset = get_cifar_cat_dog_dataset(train=False,
+                                                 download=download,
+                                                 transform=transform_test)
+
+        if dataset == "CIFAR10-Cat-Dog":
+            cifar_cat_dog_dataset = get_cifar_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            train_dataset = cifar_cat_dog_dataset
+
+        elif dataset == "STL10-Cat-Dog":
+            stl10_cat_dog_dataset = get_stl10_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            train_dataset = stl10_cat_dog_dataset
+
+        elif dataset == "Kaggle-Cat-Dog":
+            kaggle_cat_dog_dataset = get_kaggle_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            train_dataset = kaggle_cat_dog_dataset
+
+        elif dataset == "CIFAR10-STL10-Cat-Dog":
+            cifar_cat_dog_dataset = get_cifar_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            stl10_cat_dog_dataset = get_stl10_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            train_dataset = ConcatDataset([
+                cifar_cat_dog_dataset,
+                stl10_cat_dog_dataset,
+            ])
+
+        elif dataset == "CIFAR10-Kaggle-Cat-Dog":
+            cifar_cat_dog_dataset = get_cifar_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            kaggle_cat_dog_dataset = get_kaggle_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            train_dataset = ConcatDataset([
+                cifar_cat_dog_dataset,
+                kaggle_cat_dog_dataset
+            ])
+
+        elif dataset == "STL10-Kaggle-Cat-Dog":
+            stl10_cat_dog_dataset = get_stl10_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            kaggle_cat_dog_dataset = get_kaggle_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            train_dataset = ConcatDataset([
+                stl10_cat_dog_dataset,
+                kaggle_cat_dog_dataset
+            ])
+
+        elif dataset == "CIFAR10-STL10-Kaggle-Cat-Dog":
+            cifar_cat_dog_dataset = get_cifar_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            stl10_cat_dog_dataset = get_stl10_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            kaggle_cat_dog_dataset = get_kaggle_cat_dog_dataset(
+                download=download,
+                transform=transform_train,
+            )
+            train_dataset = ConcatDataset([
+                cifar_cat_dog_dataset,
+                stl10_cat_dog_dataset,
+                kaggle_cat_dog_dataset
+            ])
+
+        train_loader = DataLoader(train_dataset,
+                                  batch_size=batch_size,
+                                  shuffle=train_shuffle,
+                                  num_workers=4,
+                                  )
+        test_loader = DataLoader(test_dataset,
+                                 batch_size=batch_size,
+                                 shuffle=False,
+                                 num_workers=4,
+                                 )
+        return train_loader, test_loader
 
     elif dataset != "AFAD":
         func = {"SVHN": datasets.SVHN, "CIFAR10": datasets.CIFAR10, "CIFAR100": datasets.CIFAR100, "MNIST": datasets.MNIST, "ImageNet": datasets.ImageNet}
@@ -190,8 +353,8 @@ def get_dataloaders(
         test_loader = DataLoader(d_test, batch_size=batch_size, shuffle=False)
         if pseudo_labels and dataset != "SVHN":
             transform_train = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: x.float())])
-            import pickle
             import os
+            import pickle
             aux_data_filename = "ti_500K_pseudo_labeled.pickle"
             aux_path = os.path.join("./data", aux_data_filename)
             print("Loading data from %s" % aux_path)
@@ -204,6 +367,7 @@ def get_dataloaders(
             train_loader = DataLoader(cifar_train, batch_size=batch_size, shuffle=train_shuffle)
 
     else:
+        raise Exception("Unknown dataset")  # TODO: remove
         TRAIN_CSV_PATH = '/home/users/myaghini/AFAD_saved_model/afad_train.csv'
         TEST_CSV_PATH = '/home/users/myaghini/AFAD_saved_model/afad_test.csv'
         IMAGE_PATH = '/home/users/myaghini/AFAD-Full'

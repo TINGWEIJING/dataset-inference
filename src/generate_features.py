@@ -6,19 +6,23 @@ import json
 import os
 import sys
 import time
+from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Optional, Union
 
 import ipdb
 import numpy as np
 import torch
 import torch.nn as nn
+from torchvision.models import mobilenet_v3_large
 
 import params
 from attacks import *
 from funcs import *
 from models import *
-from params import AbsArgs
+from params import Args
 from train import epoch_test
+from utils.logger import Unbuffered
 
 '''Threat Models'''
 # A) complete model theft
@@ -34,7 +38,7 @@ from train import epoch_test
 # D) Train a teacher model on a separate dataset (test set)
 
 
-def get_adversarial_vulnerability(args: AbsArgs,
+def get_adversarial_vulnerability(args: Args,
                                   loader: DataLoader,
                                   model: torch.nn.Module,
                                   num_images=1000) -> Tuple[float, float, torch.Tensor]:
@@ -85,21 +89,26 @@ def get_adversarial_vulnerability(args: AbsArgs,
     return train_loss / train_n, train_acc / train_n, full_d
 
 
-def get_random_label_only(args: AbsArgs, loader, model, num_images=1000):
-    print("Getting random attacks")
+def get_random_label_only(args: Args, loader, model, num_images=1000):
+    # output stream
+    bothout = Unbuffered()
+    print("Getting random attacks", file=bothout)
     batch_size = args.batch_size
     max_iter = num_images/batch_size
     lp_dist = [[], [], []]
     ex_skipped = 0
     for i, batch in enumerate(loader):
+        print(f'======== iter: {i} ========', file=bothout)
         if args.regressor_embed == 1:  # We need an extra set of `distinct images for training the confidence regressor
             if(ex_skipped < num_images):
                 y = batch[1]
                 ex_skipped += y.shape[0]
                 continue
         for j, distance in enumerate(["linf", "l2", "l1"]):
+            print(f'==== distance: {distance} ====', file=bothout)
             temp_list = []
             for target_i in range(10):  # 5 random starts
+                print(f'== target_i: {target_i} ==', file=bothout)
                 X, y = batch[0].to(device), batch[1].to(device)
                 args.distance = distance
                 # args.lamb = 0.0001
@@ -119,12 +128,12 @@ def get_random_label_only(args: AbsArgs, loader, model, num_images=1000):
     lp_d = [torch.cat(lp_dist[i], dim=0).unsqueeze(-1) for i in range(3)]
     # full_d = [num_images, num_classes, num_attacks]
     full_d = torch.cat(lp_d, dim=-1)
-    print(full_d.shape)
+    print(f"full_d.shape: {full_d.shape}", file=bothout)
 
     return full_d
 
 
-def get_topgd_vulnerability(args: AbsArgs, loader, model, num_images=1000):
+def get_topgd_vulnerability(args: Args, loader, model, num_images=1000):
     batch_size = args.batch_size
     max_iter = num_images/batch_size
     lp_dist = [[], [], []]
@@ -160,12 +169,12 @@ def get_topgd_vulnerability(args: AbsArgs, loader, model, num_images=1000):
     lp_d = [torch.cat(lp_dist[i], dim=0).unsqueeze(-1) for i in range(3)]
     # full_d = [num_images, num_classes, num_attacks]
     full_d = torch.cat(lp_d, dim=-1)
-    print(full_d.shape)
+    print(f"full_d.shape: {full_d.shape}", file=bothout)
 
     return full_d
 
 
-def get_mingd_vulnerability(args: AbsArgs,
+def get_mingd_vulnerability(args: Args,
                             loader: DataLoader,
                             model: torch.nn.Module,
                             num_images=1000):
@@ -173,26 +182,26 @@ def get_mingd_vulnerability(args: AbsArgs,
     max_iter = num_images/batch_size
     lp_dist = [[], [], []]
     ex_skipped = 0
-    for i, batch in enumerate(loader): # for each batch of data
-        print(f'======== iter: {i} ========')
+    for i, batch in enumerate(loader):  # for each batch of data
+        print(f'======== iter: {i} ========', file=bothout)
         if args.regressor_embed == 1:  # We need an extra set of `distinct images for training the confidence regressor
             if(ex_skipped < num_images):
                 y = batch[1]
                 ex_skipped += y.shape[0]
                 continue
-        for j, distance in enumerate(["linf", "l2", "l1"]): # for each norm func
-            print(f'==== {distance} ====')
+        for j, distance in enumerate(["linf", "l2", "l1"]):  # for each norm func
+            print(f'==== distance: {distance} ====', file=bothout)
             temp_list = []
-            for target_i in range(args.num_classes): # for each class of data
-                print(f'== {target_i} ==')
+            for target_i in range(args.num_classes):  # for each class of data
+                print(f'== target_i: {target_i} ==', file=bothout)
                 X, y = batch[0].to(device), batch[1].to(device)
-                args.distance = distance # distance type in string
+                args.distance = distance  # distance type in string
                 # args.lamb = 0.0001 (unknown intention, maybe is zombie code left by authors)
 
                 # get difference in distance between class boundaries
                 # `y*0 + target_i` same as torch.full(y.shape, target_i)
-                delta = mingd(model, X, y, args, target=y*0 + target_i) 
-                yp = model(X+delta) # (unknown intention, maybe is zombie code left by authors)
+                delta = mingd(model, X, y, args, target=y*0 + target_i)
+                yp = model(X+delta)  # (unknown intention, maybe is zombie code left by authors)
 
                 distance_dict = {"linf": norms_linf_squeezed,
                                  "l1": norms_l1_squeezed,
@@ -208,28 +217,32 @@ def get_mingd_vulnerability(args: AbsArgs,
     lp_d = [torch.cat(lp_dist[i], dim=0).unsqueeze(-1) for i in range(3)]
     # full_d = [num_images, num_classes, num_attacks]
     full_d = torch.cat(lp_d, dim=-1)
-    print(full_d.shape)
+    print(f"full_d.shape: {full_d.shape}", file=bothout)
 
     return full_d
 
 
-def feature_extractor(args: AbsArgs):
+def feature_extractor(args: Args):
     '''
     '''
+    # output stream
+    bothout = Unbuffered()
     # load trained student model .pt file
     if args.dataset != "ImageNet":
         train_loader, test_loader = get_dataloaders(
-            args.dataset,
+            args.victim_dataset,
             args.batch_size,
+            normalize=args.normalize,
+            download=args.download_dataset,
             pseudo_labels=False,
             train_shuffle=False
         )
-        student, _ = get_student_teacher(args)  # teacher is not needed
-        location = f"{args.model_dir}/final.pt"
-        try:
+        student, _ = get_student_teacher(args)  # teacher is not needed # TODO: use Mobilenet
+        location = f"{args.model_complete_dir_path}/final.pt"
+        try:  # TODO: solve error
             student = student.to(args.device)
             student.load_state_dict(torch.load(location, map_location=args.device))
-        except:
+        except Exception as e:
             student = nn.DataParallel(student).to(args.device)
             student.load_state_dict(torch.load(location, map_location=args.device))
     else:
@@ -256,7 +269,8 @@ def feature_extractor(args: AbsArgs):
                              test_loader,
                              student,
                              stop=True)
-    print(f'Model: {args.model_dir} | \t Test Acc: {test_acc:.3f}')
+    print(f'Model: {args.model_complete_dir_path}', file=bothout)
+    print(f'Test Acc: {test_acc:.3f}', file=bothout)
 
     mapping = {'pgd': get_adversarial_vulnerability,
                'topgd': get_topgd_vulnerability,
@@ -266,15 +280,13 @@ def feature_extractor(args: AbsArgs):
     func = mapping[args.feature_type]
 
     test_d = func(args, test_loader, student)
-    print(test_d)
-    torch.save(test_d, f"{args.file_dir}/test_{args.feature_type}_vulnerability_2.pt")
+    torch.save(test_d, f"{args.feature_complete_dir_path}/test_{args.feature_type}_vulnerability_2.pt")
 
     train_d = func(args, train_loader, student)
-    print(train_d)
-    torch.save(train_d, f"{args.file_dir}/train_{args.feature_type}_vulnerability_2.pt")
+    torch.save(train_d, f"{args.feature_complete_dir_path}/train_{args.feature_type}_vulnerability_2.pt")
 
 
-def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, None]:
+def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, None]:
     '''
     Prepare student (threat) model architecture based on `args.dataset` and `args.mode` for loading
     '''
@@ -283,7 +295,7 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, None]:
                   "CIFAR100": WideResNet,
                   "AFAD": resnet34,
                   "SVHN": ResNet_8x}
-    Net_Arch: Union[torch.nn.Module, ResNet] = net_mapper[args.dataset]
+    Net_Arch: Union[torch.nn.Module, ResNet] = net_mapper.get(args.dataset, WideResNet)  # ! Use WideResNet otherwise
     teacher = None
     mode = args.mode
     # ['zero-shot', 'prune', 'fine-tune', 'extract-label', 'extract-logit', 'distillation', 'teacher']
@@ -341,12 +353,13 @@ def get_student_teacher(args: AbsArgs) -> Tuple[torch.nn.Module, None]:
         # python generate_features.py --feature_type rand --dataset SVHN --batch_size 500 --mode teacher --normalize 1 --model_id teacher_normalized
         # python generate_features.py --batch_size 500 --mode teacher --normalize 0 --model_id teacher_unnormalized --dataset CIFAR10
         # python generate_features.py --batch_size 500 --mode teacher --normalize 1 --model_id teacher_normalized --dataset CIFAR10
+        # TODO: change back
         student = Net_Arch(n_classes=args.num_classes,
                            depth=deep_full,
                            widen_factor=10,
                            normalize=args.normalize,
                            dropRate=0.3)
-
+        # student = mobilenet_v3_large(pretrained=False)
         # Alternate student models: [lr_max = 0.01, epochs = 100], [preactresnet], [dropRate]
 
     return student, teacher
@@ -357,45 +370,72 @@ if __name__ == "__main__":
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     # os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
-    parser = params.parse_args()
-    args = parser.parse_args()
-    args: AbsArgs = params.add_config(args) if args.config_file != None else args
+    # parse command options
+    args: Args = Args().parse_args()
 
-    # sys.stdout = open(f'{args.mode}-{args.model_id}.txt', 'w')
+    # load config file if provided
+    if args.config_file is not None:
+        args.load(args.config_file)
 
-    print(args)
-    device = torch.device("cuda:{0}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
+    # decide device
+    device = torch.device(f'cuda:{args.gpu_id}' if torch.cuda.is_available() else 'cpu')
 
     # prepare model input dir path
-    # root = f"../models/{args.dataset}"
-    root = f"./ting_models/{args.dataset}"
-    model_dir = f"{root}/model_{args.model_id}"
-    print("Model Directory:", model_dir)
-    args.model_dir = model_dir
+    # TODO: change to parent folder
+    cwd = Path.cwd()
+
+    # TODO: add model output option
+    model_dir_path = cwd / "_model"
+    model_dataset_cat_dir_path = model_dir_path / f"{args.dataset}"
+    model_complete_dir_path = model_dataset_cat_dir_path / f"model_{args.model_id}"
 
     # prepare feature extration output dir path
-    root = f"./ting_files_2/{args.dataset}"
-    file_dir = f"{root}/model_{args.model_id}"
+    feature_dir_path = cwd / "_feature"
+    feature_dataset_cat_dir_path = feature_dir_path / f"{args.victim_dataset}"  # ! use victim dataset
+    feature_complete_dir_path = feature_dataset_cat_dir_path / f"model_{args.model_id}-{args.dataset}"
     if args.regressor_embed == 1:
-        file_dir += "_cr"
-    print("File Directory:", file_dir)
-    args.file_dir = file_dir
+        feature_complete_dir_path = feature_dataset_cat_dir_path / f"model_{args.model_id}_cr"
 
-    # create featire extration output dir
-    if(not os.path.exists(file_dir)):
-        os.makedirs(file_dir)
+    args.model_complete_dir_path = model_complete_dir_path
+    args.feature_complete_dir_path = feature_complete_dir_path
 
-    # save args values
-    if args.dataset != "ImageNet":
-        with open(f"{model_dir}/model_info.txt", "w") as f:
-            json.dump(args.__dict__, f, indent=2)
+    # create folder if not exists
+    feature_complete_dir_path.mkdir(parents=True, exist_ok=True)
 
+    # TODO: change type in Args class
     args.device = device
-    print(device)
+
+    # TODO: use set all seed
     torch.cuda.set_device(device)
     torch.manual_seed(args.seed)
 
-    n_class = {"CIFAR10": 10, "CIFAR100": 100, "AFAD": 26, "SVHN": 10, "ImageNet": 1000}
+    n_class = {
+        "CIFAR10": 10,
+        "CIFAR100": 100,
+        "AFAD": 26,
+        "SVHN": 10,
+        "ImageNet": 1000,
+        "CIFAR10-Cat-Dog": 2,
+        "STL10-Cat-Dog": 2,
+        "Kaggle-Cat-Dog": 2,
+        "CIFAR10-STL10-Cat-Dog": 2,
+        "CIFAR10-Kaggle-Cat-Dog": 2,
+        "STL10-Kaggle-Cat-Dog": 2,
+        "CIFAR10-STL10-Kaggle-Cat-Dog": 2,
+    }
     args.num_classes = n_class[args.dataset]
+
+    # save config
+    args.save(path=model_complete_dir_path / "train_config.json")
+
+    # setup output stream
+    bothout = Unbuffered(file_path=feature_complete_dir_path / "logs.txt")
+
+    TIMESTAMP = (datetime.utcnow() + timedelta(hours=8)).strftime("%y-%m-%d %H:%M")
+    print(TIMESTAMP, file=bothout)
+    startTime = time.process_time()
+    print("Model Directory:", model_complete_dir_path, file=bothout)
+    print("Feature Directory:", feature_complete_dir_path, file=bothout)
     feature_extractor(args)
-    sys.stdout.close()
+    endTime = time.process_time()
+    print(f"Time taken: {endTime - startTime:.2f} s", file=bothout)
