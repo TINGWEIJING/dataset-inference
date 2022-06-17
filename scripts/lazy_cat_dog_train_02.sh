@@ -26,51 +26,51 @@ python3 ./src/train.py \
   --lr_mode 2 \
   --epochs 5 \
   --dataset CIFAR10-Cat-Dog \
+  --use_data_parallel \
   --download_dataset
 
-echo "# Kaggle-Cat-Dog"
+echo "# B.1 'extract-label' | Model extraction"
 python3 ./src/train.py \
   --batch_size 512 \
-  --mode teacher \
+  --mode extract-label \
   --normalize 1 \
-  --model_id teacher_normalized \
+  --model_id extract-label_normalized \
+  --pseudo_labels 0 \
   --lr_mode 2 \
-  --epochs 50 \
+  --epochs 20 \
   --dataset CIFAR10-Cat-Dog \
-  --dropRate 0.3 \
-  --pseudo_labels 0
+  --use_data_parallel
 
-echo "# CIFAR10-STL10-Cat-Dog"
+echo "B.2 'extract-logit' | Model extraction"
 python3 ./src/train.py \
   --batch_size 512 \
-  --mode teacher \
+  --mode extract-logit \
   --normalize 1 \
-  --model_id teacher_normalized \
+  --model_id extract-logit_normalized \
+  --pseudo_labels 0 \
   --lr_mode 2 \
-  --epochs 50 \
+  --epochs 20 \
   --dataset CIFAR10-Cat-Dog \
-  --dropRate 0.3 \
+  --use_data_parallel
 
-echo "# CIFAR10-Kaggle-Cat-Dog"
+echo "C.1 'distillation' | Data distillation"
 python3 ./src/train.py \
   --batch_size 512 \
-  --mode teacher \
+  --mode distillation \
   --normalize 1 \
-  --model_id teacher_normalized \
+  --model_id distillation_normalized \
   --lr_mode 2 \
   --epochs 50 \
   --dataset CIFAR10-Cat-Dog \
-  --dropRate 0.3 \
-  --pseudo_labels 0
+  --use_data_parallel
 
-echo "# STL10-Kaggle-Cat-Dog"
+echo "C.2 'pre-act-18' | Different architecture"
 python3 ./src/train.py \
   --batch_size 512 \
-  --mode teacher \
+  --mode pre-act-18 \
   --normalize 1 \
-  --model_id teacher_normalized \
+  --model_id pre-act-18_normalized \
   --lr_mode 2 \
   --epochs 50 \
   --dataset CIFAR10-Cat-Dog \
-  --dropRate 0.3 \
-  --pseudo_labels 0
+  --use_data_parallel

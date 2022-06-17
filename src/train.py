@@ -304,7 +304,7 @@ def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, torch.nn.Module]:
         path = f"./_model/{args.dataset}/{teacher_dir}/final"
         student = load(student, path)
         student.train()
-        assert(args.pseudo_labels)
+        # assert(args.pseudo_labels)
 
     elif mode in ["extract-label", "extract-logit"]:
         # python train.py --batch_size 1000 --mode extract-label --normalize 0 --model_id extract-label_unnormalized --pseudo_labels 1 --lr_mode 2 --epochs 20 --dataset CIFAR10
@@ -321,7 +321,7 @@ def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, torch.nn.Module]:
         student.to(args.device)
         # student = nn.DataParallel(student).to(args.device)
         student.train()
-        assert(args.pseudo_labels)
+        # assert(args.pseudo_labels)
 
     elif mode in ["distillation", "independent"]:
         dR = 0.3 if mode == "independent" else 0.0
