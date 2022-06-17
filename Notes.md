@@ -416,6 +416,7 @@ Objective2: To classify whether a person is wearing face mask based on the detec
 ### Training Commands
 ```bash
 nohup ./lazy_cat_dog_train_01.sh &> log_lazy_cat_dog_train_01.txt &
+nohup ./scripts/test.sh &> ./_log/test.txt &
 ps aux | grep -i 'python3'
 ps aux | grep -i './src/train.py'
 
