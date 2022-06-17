@@ -11,5 +11,4 @@ python ./src/train.py \
   --dataset CIFAR10-Cat-Dog \
   --dropRate 0.3 \
   --pseudo_labels 0 \
-  --use_data_parallel \
   --download_dataset
