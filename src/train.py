@@ -262,7 +262,7 @@ def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, torch.nn.Module]:
         teacher.to(args.device)
         # teacher = nn.DataParallel(teacher).to(args.device) if args.dataset != "SVHN" else teacher.to(args.device)
         teacher_dir = "model_teacher_normalized" if args.normalize else "model_teacher_unnormalized"
-        path = f"./ting_models/{args.dataset}/{teacher_dir}/final"
+        path = f"./_model/{args.dataset}/{teacher_dir}/final"
         teacher = load(teacher, path)
         teacher.eval()
 
@@ -301,7 +301,7 @@ def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, torch.nn.Module]:
         # student = nn.DataParallel(student).to(args.device) if args.dataset != "SVHN" else student.to(args.device)
         # TODO: change model path
         teacher_dir = "model_teacher_normalized" if args.normalize else "model_teacher_unnormalized"
-        path = f"./ting_models/{args.dataset}/{teacher_dir}/final"
+        path = f"./_model/{args.dataset}/{teacher_dir}/final"
         student = load(student, path)
         student.train()
         assert(args.pseudo_labels)

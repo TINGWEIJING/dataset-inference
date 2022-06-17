@@ -390,8 +390,12 @@ def norms(Z):
 
 def load(model, model_name):
     try:
-        print(model_name)
-        model.load_state_dict(torch.load(f"{model_name}.pt"))
+        print(f"Loading model: {model_name}")
+        if torch.cuda.is_available():
+            model_load = torch.load(f"{model_name}.pt")
+        else:
+            model_load = torch.load(f"{model_name}.pt", map_location="cpu")
+        model.load_state_dict(model_load)
     except Exception as e:
         raise e
         dictionary = torch.load(f"{model_name}.pt")['state_dict']
