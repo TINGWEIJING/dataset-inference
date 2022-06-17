@@ -414,7 +414,8 @@ if __name__ == "__main__":
     args.device = device
 
     # TODO: use set all seed
-    torch.cuda.set_device(device)
+    if torch.cuda.is_available():
+        torch.cuda.set_device(device)
     torch.manual_seed(args.seed)
 
     n_class = {

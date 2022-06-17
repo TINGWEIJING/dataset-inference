@@ -16,9 +16,13 @@ cifar10_mean = (0.4914, 0.4822, 0.4465)
 cifar10_std = (0.2471, 0.2435, 0.2616)
 none_std = (1.0, 1.0, 1.0)
 
-mu = torch.tensor(cifar10_mean).view(3, 1, 1).cuda()
-std = torch.tensor(cifar10_std).view(3, 1, 1).cuda()
-none_std = torch.tensor(none_std).view(3, 1, 1).cuda()
+mu = torch.tensor(cifar10_mean).view(3, 1, 1)
+std = torch.tensor(cifar10_std).view(3, 1, 1)
+none_std = torch.tensor(none_std).view(3, 1, 1)
+if torch.cuda.is_available():
+    mu = mu.cuda()
+    std = std.cuda()
+    none_std = none_std.cuda()
 
 
 snnl = None
