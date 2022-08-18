@@ -417,6 +417,11 @@ Objective2: To classify whether a person is wearing face mask based on the detec
 ```bash
 nohup ./lazy_cat_dog_train_01.sh &> log_lazy_cat_dog_train_01.txt &
 nohup ./scripts/test.sh &> ./_log/test.txt &
+nohup ./scripts/lazy_cat_dog_train_03.sh &> ./_log/lazy_cat_dog_train_03.txt &
+nohup ./scripts/lazy_cat_dog_train_03.sh &> ./_log/lazy_cat_dog_train_03b.txt &
+nohup ./scripts/lazy_cat_dog_train_04.sh &> ./_log/lazy_cat_dog_train_04.txt &
+nohup ./scripts/lazy_cat_dog_train_05.sh &> ./_log/lazy_cat_dog_train_05.txt &
+nohup ./scripts/lazy_train_06.sh &> ./_log/lazy_train_06.txt &
 ps aux | grep -i 'python3'
 ps aux | grep -i './src/train.py'
 
@@ -533,6 +538,13 @@ python ./src/train.py \
 ### Features Commands
 ```bash
 nohup ./lazy_cat_dog_feature_01.sh &> log_lazy_cat_dog_feature_01.txt &
+nohup ./scripts/lazy_cat_dog_feature_03.sh &> ./_log/lazy_cat_dog_feature_03.txt &
+nohup ./scripts/lazy_cat_dog_feature_04.sh &> ./_log/lazy_cat_dog_feature_04.txt &
+nohup ./scripts/lazy_cat_dog_feature_04b.sh &> ./_log/lazy_cat_dog_feature_04b.txt &
+nohup ./scripts/lazy_cat_dog_feature_04c.sh &> ./_log/lazy_cat_dog_feature_04c.txt &
+nohup ./scripts/lazy_cat_dog_feature_04c.sh &> ./_log/lazy_cat_dog_feature_04c_02.txt &
+nohup ./scripts/lazy_feature_06.sh &> ./_log/lazy_feature_06.txt &
+nohup ./scripts/lazy_feature_06b.sh &> ./_log/lazy_feature_06b.txt &
 ps aux | grep -i 'python3'
 ps aux | grep -i './src/generate_features.py'
 
@@ -559,4 +571,13 @@ scp -P 9413 "tingweijing@ssh.jiuntian.com:/data/weijing/ting-dataset-inference/_
 scp -P 9413 "tingweijing@ssh.jiuntian.com:/data/weijing/ting-dataset-inference/_feature.zip" "/home/ting/Downloads/"
 
 ls -aR | grep ":$" | perl -pe 's/:$//;s/[^-][^\/]*\//    /g;s/^    (\S)/└── \1/;s/(^    |    (?= ))/│   /g;s/    (\S)/└── \1/
+```
+
+### CINIC10 Datasets
+```bash
+cd _dataset
+wget https://datashare.is.ed.ac.uk/bitstream/handle/10283/3192/CINIC-10.tar.gz
+mkdir CINIC-10
+cd CINIC-10
+tar -xf "CINIC-10.tar.gz" -C ./CINIC-10
 ```

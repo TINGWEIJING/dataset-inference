@@ -30,6 +30,14 @@ class Args(Tap):
         "CIFAR10-Kaggle-Cat-Dog",
         "STL10-Kaggle-Cat-Dog",
         "CIFAR10-STL10-Kaggle-Cat-Dog",
+        "CIFAR-CINIC-100-0",
+        "CIFAR-CINIC-90-10",
+        "CIFAR-CINIC-80-20",
+        "CIFAR-CINIC-60-40",
+        "CIFAR-CINIC-40-60",
+        "CIFAR-CINIC-20-80",
+        "CIFAR-CINIC-10-90",
+        "CIFAR-CINIC-0-100",
     ] = "CIFAR10"
     '''MNIST/CIFAR10'''
     model_type: Literal["cnn", "wrn-40-2", "wrn-28-10", "preactresnet", "resnet34"] \
@@ -83,7 +91,7 @@ class Args(Tap):
 
     # LR
     lr_mode: int = 1
-    '''Step wise or Cyclic'''
+    '''Step wise or Cyclic, select `5` for MultiStepLR Scheduler'''
     opt_type: str = "SGD"
     '''Optimizer'''
     lr_max: float = 0.1
@@ -166,8 +174,19 @@ class Args(Tap):
         "CIFAR10-Kaggle-Cat-Dog",
         "STL10-Kaggle-Cat-Dog",
         "CIFAR10-STL10-Kaggle-Cat-Dog",
+        "CIFAR-CINIC-100-0",
+        "CIFAR-CINIC-90-10",
+        "CIFAR-CINIC-80-20",
+        "CIFAR-CINIC-60-40",
+        "CIFAR-CINIC-40-60",
+        "CIFAR-CINIC-20-80",
+        "CIFAR-CINIC-10-90",
+        "CIFAR-CINIC-0-100",
     ] = "CIFAR10"
     '''Victim dataset for feature extraction'''
+
+    num_embedding_samples: int = 1000
+    '''Number of samples used to generate embeddings'''
 
     # Hidden/Generated
     _wik: str = 'Ok'

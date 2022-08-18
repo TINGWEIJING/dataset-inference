@@ -1,25 +1,27 @@
 from __future__ import absolute_import
+
+import argparse
+import glob
+import json
+import os
 import sys
 import time
-import argparse
-from typing import Callable
-import ipdb
-import params
-import glob
-import os
-import json
-import numpy as np
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Callable
 
+import ipdb
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torchvision.models import ResNet, mobilenet_v3_large, resnet18
+
+import params
 from funcs import *
 from models import *
-from pathlib import Path
 from params import Args
 from utils.logger import Unbuffered
-from torchvision.models import mobilenet_v3_large
 
 '''Threat Models'''
 # A) complete model theft
@@ -159,6 +161,118 @@ def epoch_test(args: Args,
     return test_loss / test_n, test_acc / test_n
 
 
+def train_one_epoch(
+    model: nn.Module,
+    train_dataloader: DataLoader,
+    optimizer: torch.optim.Optimizer,
+    loss_fn: nn.Module,
+    device: torch.device,
+):
+    '''
+    ResNet normal training
+    '''
+    # constant
+    train_size = len(train_dataloader.dataset)
+
+    # return variable
+    running_loss = 0  # total loss of one epoch
+    avg_running_loss = 0
+    avg_sole_batch_loss_list = []
+    total_correct_num = 0  # num of correct pred
+    acc = 0
+
+    for batch_sample in tqdm(
+        train_dataloader,
+        desc="Batch training",
+        leave=True,
+        total=len(train_dataloader)
+    ):
+        inputs: torch.Tensor
+        labels: torch.Tensor
+        inputs, labels = batch_sample
+
+        # move to device
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+
+        # zero the parameter gradients
+        optimizer.zero_grad()
+
+        # forward + backward + optimize
+        preds: torch.Tensor = model(inputs)
+        loss: torch.Tensor = loss_fn(preds, labels)  # return avg loss of current batch
+        loss.backward()
+        optimizer.step()
+
+        # statistics
+        avg_sole_batch_loss = loss.detach().item()
+        sole_batch_loss = avg_sole_batch_loss * inputs.size(0)  # compute total single batch loss
+        running_loss += sole_batch_loss
+        correct_num = (preds.argmax(1) == labels).type(torch.float).sum().item()
+        total_correct_num += correct_num
+
+        avg_sole_batch_loss_list.append(avg_sole_batch_loss)
+
+    avg_running_loss = running_loss / train_size
+    acc = (total_correct_num / train_size) * 100
+
+    return avg_running_loss, avg_sole_batch_loss_list, int(total_correct_num), acc
+
+
+def val_test_one_epoch(
+    model: nn.Module,
+    dataloader: DataLoader,
+    loss_fn: nn.Module,
+        device: torch.device,
+):
+    '''
+    ResNet normal testing
+    '''
+    # constant
+    dataset_size = len(dataloader.dataset)
+
+    # return variable
+    running_loss = 0  # total loss of one epoch
+    avg_running_loss = 0
+    avg_sole_batch_loss_list = []
+    total_correct_num = 0  # num of correct pred
+    acc = 0
+
+    with torch.no_grad():
+        for batch_sample in tqdm(
+            dataloader,
+            desc="Batch testing",
+            leave=True,
+            total=len(dataloader)
+        ):
+            inputs: torch.Tensor
+            labels: torch.Tensor
+            inputs, labels = batch_sample
+
+            # move to device
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+
+            # forward + backward + optimize
+            preds: torch.Tensor = model(inputs)
+            loss: torch.Tensor = loss_fn(preds, labels)  # return avg loss of current batch
+
+            # statistics
+            avg_sole_batch_loss = loss.detach().item()
+            sole_batch_loss = avg_sole_batch_loss * inputs.size(0)  # compute total single batch loss
+            running_loss += sole_batch_loss
+            correct_num = (preds.argmax(1) == labels).type(torch.float).sum().item()
+
+            total_correct_num += correct_num
+
+            avg_sole_batch_loss_list.append(avg_sole_batch_loss)
+
+        avg_running_loss = running_loss / dataset_size
+        acc = (total_correct_num / dataset_size) * 100
+
+    return avg_running_loss, avg_sole_batch_loss_list, int(total_correct_num), acc
+
+
 def trainer(args: Args):
     '''
     Originally named `trainer`. \\
@@ -186,11 +300,18 @@ def trainer(args: Args):
     # optimizer
     if args.opt_type == "SGD":
         opt = optim.SGD(student.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+    elif args.opt_type == "Adam":
+        opt = optim.Adam(student.parameters(), lr=args.lr_max)
     else:
         opt = optim.Adam(student.parameters(), lr=0.1)
 
     # learning rate scheduler
-    lr_schedule = lr_scheduler(args)
+    if args.lr_mode == 5:
+        lr_schedule = torch.optim.lr_scheduler.MultiStepLR(opt, milestones=[int(args.epochs * 0.3), int(args.epochs * 0.8)], gamma=0.1)
+        loss_fn = torch.nn.CrossEntropyLoss().to(args.device)
+    else:
+        lr_schedule = lr_scheduler(args)
+        loss_fn = None
     t_start = 0  # represent iteration/epoch starting number
 
     # TODO: test resume script
@@ -199,35 +320,154 @@ def trainer(args: Args):
         t_start = args.resume_iter + 1
         student.load_state_dict(torch.load(location, map_location=device))
 
+    # start training
+    train_epoch_acc_list = []
+    train_epoch_avg_loss_list = []
+    train_mini_batch_avg_loss_list = []
+    latest_train_correct_num = 0
+    latest_train_acc = 0
+
+    val_epoch_acc_list = []
+    val_epoch_avg_loss_list = []
+    val_mini_batch_avg_loss_list = []
+    latest_val_correct_num = 0
+    latest_val_acc = 0
+    is_80_acc_model_saved = False
+    is_85_acc_model_saved = False
+    is_90_acc_model_saved = False
     for t in range(t_start, args.epochs):
-        lr = lr_schedule(t)  # get current lr value for reference
+        if args.lr_mode == 5:  # ResNet normal training and evaluation iteration
+            # training
+            result = train_one_epoch(
+                model=student,
+                train_dataloader=train_loader,
+                optimizer=opt,
+                loss_fn=loss_fn,
+                device=args.device,
+            )
+            train_avg_running_loss, train_avg_sole_batch_loss_list, \
+                train_total_correct_num, train_acc = result
 
-        student.train()
-        train_loss, train_acc = epoch(args,
-                                      train_loader,
-                                      student,
-                                      teacher=teacher,
-                                      lr_schedule=lr_schedule,
-                                      epoch_i=t,
-                                      opt=opt)
+            train_epoch_acc_list.append(train_acc)
+            train_epoch_avg_loss_list.append(train_avg_running_loss)
+            train_mini_batch_avg_loss_list.extend(train_avg_sole_batch_loss_list)
+            latest_train_correct_num = train_total_correct_num
+            latest_train_acc = train_acc
 
-        student.eval()
-        test_loss, test_acc = epoch_test(args,
-                                         test_loader,
-                                         student)
+            # validation
+            result = val_test_one_epoch(
+                model=student,
+                dataloader=test_loader,
+                loss_fn=loss_fn,
+                device=args.device,
+            )
+            val_avg_running_loss, val_avg_sole_batch_loss_list, \
+                val_total_correct_num, val_acc = result
 
-        print(f'Epoch: {t}, Train Loss: {train_loss:.3f} Train Acc: {train_acc:.3f} lr: {lr:.5f}',
-              file=bothout)
-        print(f'Epoch: {t}, Train Loss: {test_loss:.3f} Test Acc: {test_acc:.3f}',
-              file=bothout)
+            val_epoch_acc_list.append(val_acc)
+            val_epoch_avg_loss_list.append(val_avg_running_loss)
+            val_mini_batch_avg_loss_list.extend(val_avg_sole_batch_loss_list)
+            latest_val_correct_num = val_total_correct_num
+            latest_val_acc = val_acc
 
-        # ! The paper didn't use MNIST datasets, this is for testing I guess
-        if args.dataset == "MNIST":
-            torch.save(student.state_dict(), f"{args.model_complete_dir_path}/iter_{t}.pt")
-        elif (t+1) % 25 == 0:  # save every 25 iteration
-            torch.save(student.state_dict(), f"{args.model_complete_dir_path}/iter_{t}.pt")
+            # learning rate schedulers
+            lr_schedule.step()
+            print(f'{t+1:02d} | Train Loss: {train_avg_running_loss:0.4f}, Train Acc: {train_acc:0.2f}',
+                  file=bothout)
+            print(f'{t+1:02d} | Test Loss: {val_avg_running_loss:0.4f}, Test Acc: {val_acc:0.2f}',
+                  file=bothout)
 
-    torch.save(student.state_dict(), f"{args.model_complete_dir_path}/final.pt")
+            # save model
+            if train_acc >= 90 and not is_90_acc_model_saved:
+                model_file = f"{args.model_complete_dir_path}/iter_{t}_acc_90.pt"
+                try:
+                    torch.save(student.module.state_dict(), model_file)
+                except Exception as e:
+                    print(e, file=bothout)
+                    torch.save(student.state_dict(), model_file)
+                is_90_acc_model_saved = True
+                is_85_acc_model_saved = True
+                is_80_acc_model_saved = True
+            elif train_acc >= 85 and not is_85_acc_model_saved:
+                model_file = f"{args.model_complete_dir_path}/iter_{t}_acc_85.pt"
+                try:
+                    torch.save(student.module.state_dict(), model_file)
+                except Exception as e:
+                    print(e, file=bothout)
+                    torch.save(student.state_dict(), model_file)
+                is_85_acc_model_saved = True
+                is_80_acc_model_saved = True
+            elif train_acc >= 80 and not is_80_acc_model_saved:
+                model_file = f"{args.model_complete_dir_path}/iter_{t}_acc_80.pt"
+                try:
+                    torch.save(student.module.state_dict(), model_file)
+                except Exception as e:
+                    print(e, file=bothout)
+                    torch.save(student.state_dict(), model_file)
+                is_80_acc_model_saved = True
+
+        else:
+            lr = lr_schedule(t)  # get current lr value for reference
+
+            student.train()
+            train_loss, train_acc = epoch(args,
+                                          train_loader,
+                                          student,
+                                          teacher=teacher,
+                                          lr_schedule=lr_schedule,
+                                          epoch_i=t,
+                                          opt=opt)
+
+            student.eval()
+            test_loss, test_acc = epoch_test(args,
+                                             test_loader,
+                                             student)
+
+            print(f'Epoch: {t}, Train Loss: {train_loss:.3f} Train Acc: {train_acc:.3f} lr: {lr:.5f}',
+                  file=bothout)
+            print(f'Epoch: {t}, Test Loss: {test_loss:.3f} Test Acc: {test_acc:.3f}',
+                  file=bothout)
+
+            # ! The paper didn't use MNIST datasets, this is for testing I guess
+            # if args.dataset == "MNIST":
+            #     torch.save(student.state_dict(), f"{args.model_complete_dir_path}/iter_{t}.pt")
+            # elif (t+1) % 25 == 0:  # save every 25 iteration
+            #     torch.save(student.state_dict(), f"{args.model_complete_dir_path}/iter_{t}.pt")
+
+            # save model
+            if train_acc >= 0.9 and not is_90_acc_model_saved:
+                model_file = f"{args.model_complete_dir_path}/iter_{t}_acc_90.pt"
+                try:
+                    torch.save(student.module.state_dict(), model_file)
+                except Exception as e:
+                    print(e, file=bothout)
+                    torch.save(student.state_dict(), model_file)
+                is_90_acc_model_saved = True
+                is_85_acc_model_saved = True
+                is_80_acc_model_saved = True
+            elif train_acc >= 0.85 and not is_85_acc_model_saved:
+                model_file = f"{args.model_complete_dir_path}/iter_{t}_acc_85.pt"
+                try:
+                    torch.save(student.module.state_dict(), model_file)
+                except Exception as e:
+                    print(e, file=bothout)
+                    torch.save(student.state_dict(), model_file)
+                is_85_acc_model_saved = True
+                is_80_acc_model_saved = True
+            elif train_acc >= 0.80 and not is_80_acc_model_saved:
+                model_file = f"{args.model_complete_dir_path}/iter_{t}_acc_80.pt"
+                try:
+                    torch.save(student.module.state_dict(), model_file)
+                except Exception as e:
+                    print(e, file=bothout)
+                    torch.save(student.state_dict(), model_file)
+                is_80_acc_model_saved = True
+
+    try:
+        torch.save(student.module.state_dict(), f"{args.model_complete_dir_path}/final.pt")
+    except Exception as e:
+        print(e, file=bothout)
+        torch.save(student.state_dict(), f"{args.model_complete_dir_path}/final.pt")
 
 
 def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, torch.nn.Module]:
@@ -235,11 +475,13 @@ def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, torch.nn.Module]:
     Prepare student (threat) model architecture based on `args.dataset` and `args.mode` for training
     '''
     w_f = 2 if args.dataset == "CIFAR100" else 1
-    net_mapper = {"CIFAR10": WideResNet,
-                  "CIFAR100": WideResNet,
-                  "AFAD": resnet34,
-                  "SVHN": ResNet_8x}
-    Net_Arch: nn.Module = net_mapper.get(args.dataset, WideResNet) # ! Use WideResNet otherwise
+    net_mapper = {
+        "CIFAR10": WideResNet,
+        "CIFAR100": WideResNet,
+        "AFAD": resnet34,
+        "SVHN": ResNet_8x
+    }
+    Net_Arch: nn.Module = net_mapper.get(args.dataset, resnet18)  # ! Use ResNet18 otherwise
     mode = args.mode
     # ['zero-shot', 'fine-tune', 'extract-label', 'extract-logit', 'distillation', 'teacher']
     deep_full = 34 if args.dataset in ["SVHN", "AFAD"] else 28
@@ -250,11 +492,18 @@ def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, torch.nn.Module]:
         teacher = None
     else:
         deep = 34 if args.dataset in ["SVHN", "AFAD"] else 28
-        teacher = Net_Arch(n_classes=args.num_classes,
-                           depth=deep,
-                           widen_factor=10,
-                           normalize=args.normalize,
-                           dropRate=0.3)
+        # only for authors used model architecture
+        if args.dataset in net_mapper.keys():
+            teacher = Net_Arch(n_classes=args.num_classes,
+                               depth=deep,
+                               widen_factor=10,
+                               normalize=args.normalize,
+                               dropRate=0.3)
+        else:  # for ResNet
+            teacher = Net_Arch(
+                pretrained=False,
+                num_classes=args.num_classes,
+            )
         # TODO: check parallel
         if args.dataset != "SVHN":
             if args.use_data_parallel and torch.cuda.device_count() > 1:
@@ -352,12 +601,26 @@ def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, torch.nn.Module]:
     else:  # teacher
         # python train.py --batch_size 1000 --mode teacher --normalize 0 --model_id teacher_unnormalized --lr_mode 2 --epochs 100 --dataset CIFAR10 --dropRate 0.3
         # python train.py --batch_size 1000 --mode teacher --normalize 1 --model_id teacher_normalized --lr_mode 2 --epochs 100 --dataset CIFAR10 --dropRate 0.3
-        # TODO: change back
-        student = Net_Arch(n_classes=args.num_classes,
-                           depth=deep_full,
-                           widen_factor=10,
-                           normalize=args.normalize,
-                           dropRate=0.3)
+        # only for authors used model architecture
+        if "CIFAR-CINIC" in args.dataset:  # WideResNet
+            student = WideResNet(n_classes=args.num_classes,
+                                 depth=deep_full,
+                                 widen_factor=10,
+                                 normalize=args.normalize,
+                                 dropRate=0.3)
+            print("Is using WideResNet")
+            # TODO: Remove this print
+        elif args.dataset in net_mapper.keys():
+            student = Net_Arch(n_classes=args.num_classes,
+                               depth=deep_full,
+                               widen_factor=10,
+                               normalize=args.normalize,
+                               dropRate=0.3)
+        else:  # for ResNet
+            student = Net_Arch(
+                pretrained=False,
+                num_classes=args.num_classes,
+            )
         # student = mobilenet_v3_large(pretrained=False)
         # student.classifier[-1] = nn.Linear(1280, args.num_classes)
         # TODO: check parallel
@@ -431,6 +694,14 @@ if __name__ == "__main__":
         "CIFAR10-Kaggle-Cat-Dog": 2,
         "STL10-Kaggle-Cat-Dog": 2,
         "CIFAR10-STL10-Kaggle-Cat-Dog": 2,
+        "CIFAR-CINIC-100-0": 10,
+        "CIFAR-CINIC-90-10": 10,
+        "CIFAR-CINIC-80-20": 10,
+        "CIFAR-CINIC-60-40": 10,
+        "CIFAR-CINIC-40-60": 10,
+        "CIFAR-CINIC-20-80": 10,
+        "CIFAR-CINIC-10-90": 10,
+        "CIFAR-CINIC-0-100": 10,
     }
     args.num_classes = n_class[args.dataset]
 

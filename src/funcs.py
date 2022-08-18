@@ -20,6 +20,7 @@ from tqdm import tqdm
 from attacks import *
 from dataset import (get_cifar_cat_dog_dataset, get_kaggle_cat_dog_dataset,
                      get_stl10_cat_dog_dataset)
+from dataset import get_cifar_cinic_ratio_dataset
 
 
 class PseudoDataset(torch.utils.data.Dataset):
@@ -139,71 +140,91 @@ def get_dataloaders(
                                  shuffle=False)
 
     elif dataset in ["CIFAR10-Cat-Dog",
-                   "STL10-Cat-Dog",
-                   "Kaggle-Cat-Dog",
-                   "CIFAR10-STL10-Cat-Dog",
-                   "CIFAR10-Kaggle-Cat-Dog",
-                   "STL10-Kaggle-Cat-Dog",
-                   "CIFAR10-STL10-Kaggle-Cat-Dog", ]:
+                     "STL10-Cat-Dog",
+                     "Kaggle-Cat-Dog",
+                     "CIFAR10-STL10-Cat-Dog",
+                     "CIFAR10-Kaggle-Cat-Dog",
+                     "STL10-Kaggle-Cat-Dog",
+                     "CIFAR10-STL10-Kaggle-Cat-Dog", ]:
 
-        normalize_value_map = {
-            "CIFAR10-Cat-Dog": [
-                (0.49814836, 0.46096534, 0.41648629),
-                (0.24817469, 0.24257439, 0.24812133),
-            ],
-            "STL10-Cat-Dog": [
-                (0.46472397, 0.43562145, 0.3815738),
-                (0.24546842, 0.23831429, 0.24208598),
-            ],
-            "Kaggle-Cat-Dog": [
-                (0.48831935, 0.45507484, 0.41695894),
-                (0.25718583, 0.25055564, 0.25318538),
-            ],
-            "CIFAR10-STL10-Cat-Dog": [
-                (0.49510978, 0.45866135, 0.41331243),
-                (0.24811601, 0.24229977, 0.2477821),
-            ],
-            "CIFAR10-Kaggle-Cat-Dog": [
-                (0.49112764, 0.45675784, 0.4168239),
-                (0.25468247, 0.24831572, 0.25174899),
-            ],
-            "STL10-Kaggle-Cat-Dog": [
-                (0.48741184, 0.45432663, 0.41559797),
-                (0.25678514, 0.25012388, 0.25285907),
-            ],
-            "CIFAR10-STL10-Kaggle-Cat-Dog": [
-                (0.4903942, 0.45617072, 0.41584473),
-                (0.25446803, 0.24806767, 0.2515523),
-            ],
-        }
-        tr_normalize = transforms.Normalize(*normalize_value_map[dataset]) if normalize else transforms.Lambda(lambda x: x)
+        # normalize_value_map = {
+        #     "CIFAR10-Cat-Dog": [
+        #         (0.49814836, 0.46096534, 0.41648629),
+        #         (0.24817469, 0.24257439, 0.24812133),
+        #     ],
+        #     "STL10-Cat-Dog": [
+        #         (0.46472397, 0.43562145, 0.3815738),
+        #         (0.24546842, 0.23831429, 0.24208598),
+        #     ],
+        #     "Kaggle-Cat-Dog": [
+        #         (0.48831935, 0.45507484, 0.41695894),
+        #         (0.25718583, 0.25055564, 0.25318538),
+        #     ],
+        #     "CIFAR10-STL10-Cat-Dog": [
+        #         (0.49510978, 0.45866135, 0.41331243),
+        #         (0.24811601, 0.24229977, 0.2477821),
+        #     ],
+        #     "CIFAR10-Kaggle-Cat-Dog": [
+        #         (0.49112764, 0.45675784, 0.4168239),
+        #         (0.25468247, 0.24831572, 0.25174899),
+        #     ],
+        #     "STL10-Kaggle-Cat-Dog": [
+        #         (0.48741184, 0.45432663, 0.41559797),
+        #         (0.25678514, 0.25012388, 0.25285907),
+        #     ],
+        #     "CIFAR10-STL10-Kaggle-Cat-Dog": [
+        #         (0.4903942, 0.45617072, 0.41584473),
+        #         (0.25446803, 0.24806767, 0.2515523),
+        #     ],
+        # }
+        # tr_normalize = transforms.Normalize(*normalize_value_map[dataset]) if normalize else transforms.Lambda(lambda x: x)
+        # ! Use ImageNet normalization values https://github.com/pytorch/vision/blob/0f971f64f3f8d093d1f2694d2415186e56cb8db4/torchvision/transforms/_presets.py#L44
+        tr_normalize = transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)) if normalize else transforms.Lambda(lambda x: x)
 
+        # ! Old settings, will remove if ResNet experiment succeed
+        # transform_train = transforms.Compose([
+        #     transforms.RandomCrop(32, padding=4),
+        #     transforms.RandomHorizontalFlip(),
+        #     transforms.Resize((32, 32)),
+        #     transforms.ToTensor(),
+        #     tr_normalize,
+        #     transforms.Lambda(lambda x: x.float())
+        # ])
+
+        # transform_test = transforms.Compose([
+        #     transforms.Resize((32, 32)),
+        #     transforms.ToTensor(),
+        #     tr_normalize,
+        #     transforms.Lambda(lambda x: x.float())
+        # ])
+
+        # ! Transformation for ResNet 18
         transform_train = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
+            transforms.Resize((256, 256)),
+            transforms.RandomCrop((224, 224), padding=4),
             transforms.RandomHorizontalFlip(),
-            transforms.Resize((32, 32)),
             transforms.ToTensor(),
             tr_normalize,
             transforms.Lambda(lambda x: x.float())
         ])
 
         transform_test = transforms.Compose([
-            transforms.Resize((32, 32)),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
             tr_normalize,
             transforms.Lambda(lambda x: x.float())
         ])
 
-        # cifar_cat_dog_dataset = get_cifar_cat_dog_dataset(transform=transform_train)
-        # stl10_cat_dog_dataset = get_stl10_cat_dog_dataset(transform=transform_train)
-        # kaggle_cat_dog_dataset = get_kaggle_cat_dog_dataset(transform=transform_train)
-
-        test_dataset = get_cifar_cat_dog_dataset(train=False,
-                                                 download=download,
-                                                 transform=transform_test)
+        test_dataset = get_cifar_cat_dog_dataset(
+            # data_dir='../_dataset',  # temporarily
+            train=False,
+            download=download,
+            transform=transform_test
+        )
 
         if dataset == "CIFAR10-Cat-Dog":
             cifar_cat_dog_dataset = get_cifar_cat_dog_dataset(
+                # data_dir='../_dataset',  # temporarily
                 download=download,
                 transform=transform_train,
             )
@@ -211,6 +232,7 @@ def get_dataloaders(
 
         elif dataset == "STL10-Cat-Dog":
             stl10_cat_dog_dataset = get_stl10_cat_dog_dataset(
+                # data_dir='../_dataset',  # temporarily
                 download=download,
                 transform=transform_train,
             )
@@ -218,6 +240,7 @@ def get_dataloaders(
 
         elif dataset == "Kaggle-Cat-Dog":
             kaggle_cat_dog_dataset = get_kaggle_cat_dog_dataset(
+                # data_dir='../_dataset/dogs-vs-cats/train',  # temporarily
                 download=download,
                 transform=transform_train,
             )
@@ -283,6 +306,64 @@ def get_dataloaders(
                 stl10_cat_dog_dataset,
                 kaggle_cat_dog_dataset
             ])
+
+        train_loader = DataLoader(train_dataset,
+                                  batch_size=batch_size,
+                                  shuffle=train_shuffle,
+                                  num_workers=4,
+                                  )
+        test_loader = DataLoader(test_dataset,
+                                 batch_size=batch_size,
+                                 shuffle=False,
+                                 num_workers=4,
+                                 )
+        return train_loader, test_loader
+
+    elif dataset in [
+        "CIFAR-CINIC-100-0",
+        "CIFAR-CINIC-90-10",
+        "CIFAR-CINIC-80-20",
+        "CIFAR-CINIC-60-40",
+        "CIFAR-CINIC-40-60",
+        "CIFAR-CINIC-20-80",
+        "CIFAR-CINIC-10-90",
+        "CIFAR-CINIC-0-100",
+    ]:
+        # dataset name to ratio mapping
+        cifar_cinic_ratio_map = {
+            "CIFAR-CINIC-100-0": 1,
+            "CIFAR-CINIC-90-10": 0.9,
+            "CIFAR-CINIC-80-20": 0.8,
+            "CIFAR-CINIC-60-40": 0.6,
+            "CIFAR-CINIC-40-60": 0.4,
+            "CIFAR-CINIC-20-80": 0.2,
+            "CIFAR-CINIC-10-90": 0.1,
+            "CIFAR-CINIC-0-100": 0,
+        }
+
+        tr_normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)) if normalize else transforms.Lambda(lambda x: x)
+
+        transform_train = transforms.Compose([transforms.RandomCrop(32, padding=4),
+                                              transforms.RandomHorizontalFlip(),
+                                              transforms.ToTensor(),
+                                              tr_normalize,
+                                              transforms.Lambda(lambda x: x.float())])
+
+        transform_test = transforms.Compose([transforms.ToTensor(),
+                                             tr_normalize,
+                                             transforms.Lambda(lambda x: x.float())])
+
+        test_dataset = datasets.CIFAR10(
+            root="_dataset/",
+            train=False,
+            download=False,
+            transform=transform_test,
+        )
+        train_dataset = get_cifar_cinic_ratio_dataset(
+            download=False,
+            ratio=cifar_cinic_ratio_map[dataset],
+            transform=transform_test,
+        )
 
         train_loader = DataLoader(train_dataset,
                                   batch_size=batch_size,

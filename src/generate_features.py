@@ -14,7 +14,7 @@ import ipdb
 import numpy as np
 import torch
 import torch.nn as nn
-from torchvision.models import mobilenet_v3_large
+from torchvision.models import mobilenet_v3_large, resnet18
 
 import params
 from attacks import *
@@ -107,15 +107,15 @@ def get_random_label_only(args: Args, loader, model, num_images=1000):
         for j, distance in enumerate(["linf", "l2", "l1"]):
             print(f'==== distance: {distance} ====', file=bothout)
             temp_list = []
-            for target_i in range(10):  # 5 random starts
+            for target_i in range(args.num_classes):  # 5 random starts
                 print(f'== target_i: {target_i} ==', file=bothout)
                 X, y = batch[0].to(device), batch[1].to(device)
                 args.distance = distance
                 # args.lamb = 0.0001
-                preds = model(X)
+                # preds = model(X)
                 targets = None
                 delta = rand_steps(model, X, y, args, target=targets)
-                yp = model(X+delta)
+                # yp = model(X+delta)
                 distance_dict = {"linf": norms_linf_squeezed, "l1": norms_l1_squeezed, "l2": norms_l2_squeezed}
                 distances = distance_dict[distance](delta)
                 temp_list.append(distances.cpu().detach().unsqueeze(-1))
@@ -279,11 +279,11 @@ def feature_extractor(args: Args):
 
     func = mapping[args.feature_type]
 
-    test_d = func(args, test_loader, student)
-    torch.save(test_d, f"{args.feature_complete_dir_path}/test_{args.feature_type}_vulnerability_2.pt")
+    test_d = func(args, test_loader, student, num_images=args.num_embedding_samples)
+    torch.save(test_d, f"{args.feature_complete_dir_path}/test_{args.feature_type}_vulnerability_{args.num_embedding_samples}.pt")
 
-    train_d = func(args, train_loader, student)
-    torch.save(train_d, f"{args.feature_complete_dir_path}/train_{args.feature_type}_vulnerability_2.pt")
+    train_d = func(args, train_loader, student, num_images=args.num_embedding_samples)
+    torch.save(train_d, f"{args.feature_complete_dir_path}/train_{args.feature_type}_vulnerability_{args.num_embedding_samples}.pt")
 
 
 def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, None]:
@@ -295,7 +295,7 @@ def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, None]:
                   "CIFAR100": WideResNet,
                   "AFAD": resnet34,
                   "SVHN": ResNet_8x}
-    Net_Arch: Union[torch.nn.Module, ResNet] = net_mapper.get(args.dataset, WideResNet)  # ! Use WideResNet otherwise
+    Net_Arch: Union[torch.nn.Module, ResNet] = net_mapper.get(args.dataset, resnet18)  # ! Use ResNet18 otherwise
     teacher = None
     mode = args.mode
     # ['zero-shot', 'prune', 'fine-tune', 'extract-label', 'extract-logit', 'distillation', 'teacher']
@@ -354,11 +354,25 @@ def get_student_teacher(args: Args) -> Tuple[torch.nn.Module, None]:
         # python generate_features.py --batch_size 500 --mode teacher --normalize 0 --model_id teacher_unnormalized --dataset CIFAR10
         # python generate_features.py --batch_size 500 --mode teacher --normalize 1 --model_id teacher_normalized --dataset CIFAR10
         # TODO: change back
-        student = Net_Arch(n_classes=args.num_classes,
-                           depth=deep_full,
-                           widen_factor=10,
-                           normalize=args.normalize,
-                           dropRate=0.3)
+        if "CIFAR-CINIC" in args.dataset:  # WideResNet
+            student = WideResNet(n_classes=args.num_classes,
+                                 depth=deep_full,
+                                 widen_factor=10,
+                                 normalize=args.normalize,
+                                 dropRate=0.3)
+            print("Is using WideResNet")
+            # TODO: Remove this print
+        elif args.dataset in net_mapper.keys():
+            student = Net_Arch(n_classes=args.num_classes,
+                               depth=deep_full,
+                               widen_factor=10,
+                               normalize=args.normalize,
+                               dropRate=0.3)
+        else:  # for ResNet
+            student = Net_Arch(
+                pretrained=False,
+                num_classes=args.num_classes,
+            )
         # student = mobilenet_v3_large(pretrained=False)
         # Alternate student models: [lr_max = 0.01, epochs = 100], [preactresnet], [dropRate]
 
@@ -422,6 +436,14 @@ if __name__ == "__main__":
         "CIFAR10-Kaggle-Cat-Dog": 2,
         "STL10-Kaggle-Cat-Dog": 2,
         "CIFAR10-STL10-Kaggle-Cat-Dog": 2,
+        "CIFAR-CINIC-100-0": 10,
+        "CIFAR-CINIC-90-10": 10,
+        "CIFAR-CINIC-80-20": 10,
+        "CIFAR-CINIC-60-40": 10,
+        "CIFAR-CINIC-40-60": 10,
+        "CIFAR-CINIC-20-80": 10,
+        "CIFAR-CINIC-10-90": 10,
+        "CIFAR-CINIC-0-100": 10,
     }
     args.num_classes = n_class[args.dataset]
 

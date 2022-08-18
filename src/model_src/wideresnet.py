@@ -2,19 +2,19 @@ import torch
 import torch.nn as nn
 import math
 import torch.nn.functional as F
-## Use the same mean for Tiny images, CIFAR10 and CIFAR100 since they are from nearly similar distributions
+# Use the same mean for Tiny images, CIFAR10 and CIFAR100 since they are from nearly similar distributions
 
 mean = {
     'cifar10': (0.4914, 0.4822, 0.4465),
     'cifar100': (0.5071, 0.4867, 0.4408),
-    'svhn':(0.438, 0.444, 0.473)
+    'svhn': (0.438, 0.444, 0.473)
 }
 
 std = {
     # cifar10_std = (0.2023, 0.1994, 0.2010) #Some repositories use this value
     'cifar10': (0.2471, 0.2435, 0.2616),
     'cifar100': (0.2675, 0.2565, 0.2761),
-    'svhn':(0.198, 0.201, 0.197)
+    'svhn': (0.198, 0.201, 0.197)
 }
 
 
@@ -58,8 +58,7 @@ class IndividualBlock1(nn.Module):
             x1 = self.batch_norm1(x)
             x1 = self.activation(x1)
             x1 = self.conv1(x1)
-        
-        
+
         x1 = self.batch_norm2(x1)
         x1 = self.activation(x1)
         x1 = self.dropout(x1)
@@ -115,7 +114,17 @@ class Nblock(nn.Module):
 
 
 class WideResNet(nn.Module):
-    def __init__(self, depth=28, widen_factor=10, n_classes=10, in_planes=3, out_planes=16, strides = [1, 1, 2, 2], dropRate = 0.0, normalize = True):
+    def __init__(
+            self,
+            depth=28,
+            widen_factor=10,
+            n_classes=10,
+            in_planes=3,
+            out_planes=16,
+            strides=[1, 1, 2, 2],
+            dropRate=0.0,
+            normalize=True
+    ):
         super(WideResNet, self).__init__()
         k = widen_factor
         self.conv1 = nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=strides[0], padding=1, bias=False)
@@ -125,17 +134,17 @@ class WideResNet(nn.Module):
         self.out_filters = filters[-1]
         N = (depth - 4) // 6
         increase_filters = k > 1
-        self.block1 = Nblock(N, in_planes=out_planes, out_planes=filters[0], stride=strides[1], dropRate = dropRate, subsample_input=False, increase_filters=increase_filters)
-        self.block2 = Nblock(N, in_planes=filters[0], out_planes=filters[1], stride=strides[2], dropRate = dropRate)
-        self.block3 = Nblock(N, in_planes=filters[1], out_planes=filters[2], stride=strides[3], dropRate = dropRate)
+        self.block1 = Nblock(N, in_planes=out_planes, out_planes=filters[0], stride=strides[1], dropRate=dropRate, subsample_input=False, increase_filters=increase_filters)
+        self.block2 = Nblock(N, in_planes=filters[0], out_planes=filters[1], stride=strides[2], dropRate=dropRate)
+        self.block3 = Nblock(N, in_planes=filters[1], out_planes=filters[2], stride=strides[3], dropRate=dropRate)
 
         self.batch_norm = nn.BatchNorm2d(filters[-1])
         self.activation = nn.ReLU(inplace=True)
         self.avg_pool = nn.AvgPool2d(kernel_size=8)
         self.fc = nn.Linear(filters[-1], n_classes)
         dataset = "CIFAR10" if n_classes == 10 else "CIFAR100"
-        self.mu = torch.tensor(mean[dataset.lower()]).view(3,1,1)
-        self.std = torch.tensor(std[dataset.lower()]).view(3,1,1)
+        self.mu = torch.tensor(mean[dataset.lower()]).view(3, 1, 1)
+        self.std = torch.tensor(std[dataset.lower()]).view(3, 1, 1)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -148,8 +157,8 @@ class WideResNet(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        #Normalize 
-        # if self.normalize: 
+        # Normalize
+        # if self.normalize:
         #     mu = self.mu.to(x.device)
         #     std = self.std.to(x.device)
         #     x = (x-mu)/std
