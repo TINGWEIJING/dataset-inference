@@ -6,3 +6,6 @@ models/
 code/.ip*/
 code/files/
 */__*
+
+# custom
+_*/

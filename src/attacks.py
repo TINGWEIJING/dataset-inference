@@ -5,6 +5,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 import ipdb, time
 
+from utils.logger import Unbuffered  # ! Add: import for Unbuffered
 
 cifar10_mean = (0.4914, 0.4822, 0.4465)
 cifar10_std = (0.2471, 0.2435, 0.2616)
@@ -48,6 +49,7 @@ def privacy_loss(x_adv, x_natural, y, model1, model2, target1, target2):
     return kl_loss
 
 def patch_attack_private(model1, model2, X, y, params, target1, target2):
+    bothout = Unbuffered() # ! Add: setup output stream
     # ipdb.set_trace()
     epsilon = params.epsilon_l_1
     # alpha = params.alpha_l_1
@@ -62,10 +64,10 @@ def patch_attack_private(model1, model2, X, y, params, target1, target2):
         delta.data = torch.min(torch.max(delta.detach(), -X), 1-X) # clip X+delta to [0,1]
         delta.grad.zero_()
 
-    print(y)
-    pred1 = model1(X+delta).max(1)[1]; print(pred1)
-    pred2 = model2(X+delta).max(1)[1]; print(pred2)
-    print("Accuracy: ", (pred1!=pred2).sum().item())
+    print(y, file=bothout) # ! Change: output stream
+    pred1 = model1(X+delta).max(1)[1]; print(pred1, file=bothout) # ! Change: output stream
+    pred2 = model2(X+delta).max(1)[1]; print(pred2, file=bothout) # ! Change: output stream
+    print("Accuracy: ", (pred1!=pred2).sum().item(), file=bothout) # ! Change: output stream
     return delta
 
 
@@ -127,6 +129,7 @@ def mingd_unoptimized(model, X, y, args, target):
     return delta
 
 def rand_steps(model, X, y, args, target = None):
+    bothout = Unbuffered() # ! Add: setup output stream
     #optimized implementation to only query remaining points
     del target#The attack does not use the targets
     start = time.time()
@@ -153,7 +156,7 @@ def rand_steps(model, X, y, args, target = None):
             if t>0: 
                 preds = model(X_r+delta_r)
                 new_remaining = (preds.max(1)[1] == y[remaining])
-                remaining[remaining] = new_remaining
+                remaining[remaining.clone()] = new_remaining # ! Change: fix bug
             else: 
                 preds = model(X+delta)
                 remaining = (preds.max(1)[1] == y)
@@ -167,12 +170,13 @@ def rand_steps(model, X, y, args, target = None):
             delta_r.data = torch.min(torch.max(delta_r.detach(), -X_r), 1-X_r) # clip X+delta_r[remaining] to [0,1]
             delta[remaining] = delta_r.detach()
             
-        print(f"Number of steps = {t+1} | Failed to convert = {(model(X+delta).max(1)[1]==y).sum().item()} | Time taken = {time.time() - start}")
+        print(f"Number of steps = {t+1} | Failed to convert = {(model(X+delta).max(1)[1]==y).sum().item()} | Time taken = {time.time() - start}", file=bothout) # ! Change: output stream
     if is_training:
         model.train()    
     return delta
 
 def mingd(model, X, y, args, target):
+    bothout = Unbuffered() # ! Add: setup output stream
     start = time.time()
     is_training = model.training
     model.eval()                    # Need to freeze the batch norm and dropouts
@@ -188,7 +192,7 @@ def mingd(model, X, y, args, target):
             preds = model(X_r+delta_r)
             new_remaining = (preds.max(1)[1] != target[remaining])
             remaining_temp = remaining.clone()
-            remaining[remaining] = new_remaining
+            remaining[remaining_temp] = new_remaining  # ! Change: fix bug
         else: 
             preds = model(X+delta)
             remaining = (preds.max(1)[1] != target)
@@ -212,7 +216,7 @@ def mingd(model, X, y, args, target):
         delta_r.grad.zero_()
         delta[remaining] = delta_r.detach()
         
-    print(f"Number of steps = {t+1} | Failed to convert = {(model(X+delta).max(1)[1]!=target).sum().item()} | Time taken = {time.time() - start}")
+    print(f"Number of steps = {t+1} | Failed to convert = {(model(X+delta).max(1)[1]!=target).sum().item()} | Time taken = {time.time() - start}", file=bothout) # ! Change: output stream
     if is_training:
         model.train()    
     return delta

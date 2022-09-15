@@ -5,11 +5,16 @@ import torch.multiprocessing as _mp
 import torch.nn.functional as F
 import sys
 sys.path.append("./model_src/")
-from preactresnet import *
-from wideresnet import *
-from cnn import *
-from resnet import *
-from resnet_8x import *
+from model_src.preactresnet import *
+from model_src.wideresnet import *
+from model_src.cnn import *
+from model_src.resnet import *
+from model_src.resnet_8x import *
+# from preactresnet import *
+# from wideresnet import *
+# from cnn import *
+# from resnet import *
+# from resnet_8x import *
 
 def get_model(params):
     if params.model_type == "preactresnet":

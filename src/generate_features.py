@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from pathlib import Path # ! Add: import for Path
 import sys, time, argparse, ipdb, params, glob, os, json
 import numpy as np
 import torch
@@ -7,6 +8,7 @@ from funcs import *
 from attacks import *
 from models import *
 from train import epoch_test
+from utils.logger import Unbuffered # ! Add: import for Unbuffered
 
 '''Threat Models'''
 # A) complete model theft 
@@ -57,7 +59,8 @@ def get_adversarial_vulnerability(args, loader, model, num_images = 1000):
     return train_loss / train_n, train_acc / train_n, full_d
 
 def get_random_label_only(args, loader, model, num_images = 1000):
-    print("Getting random attacks")
+    bothout = Unbuffered() # ! Add: setup output stream
+    print("Getting random attacks", file=bothout) # ! Change: output stream
     batch_size = args.batch_size
     max_iter = num_images/batch_size
     lp_dist = [[],[],[]]
@@ -89,11 +92,12 @@ def get_random_label_only(args, loader, model, num_images = 1000):
     # lp_d is a list of size three with each element being a tensor of shape [num_images,num_classes]
     lp_d = [torch.cat(lp_dist[i], dim = 0).unsqueeze(-1) for i in range(3)]    
     # full_d = [num_images, num_classes, num_attacks]
-    full_d = torch.cat(lp_d, dim = -1); print(full_d.shape)
+    full_d = torch.cat(lp_d, dim = -1); print(full_d.shape, file=bothout) # ! Change: output stream
         
     return full_d
 
 def get_topgd_vulnerability(args, loader, model, num_images = 1000):
+    bothout = Unbuffered() # ! Add: setup output stream
     batch_size = args.batch_size
     max_iter = num_images/batch_size
     lp_dist = [[],[],[]]
@@ -126,11 +130,12 @@ def get_topgd_vulnerability(args, loader, model, num_images = 1000):
     # lp_d is a list of size three with each element being a tensor of shape [num_images,num_classes]
     lp_d = [torch.cat(lp_dist[i], dim = 0).unsqueeze(-1) for i in range(3)]    
     # full_d = [num_images, num_classes, num_attacks]
-    full_d = torch.cat(lp_d, dim = -1); print(full_d.shape)
+    full_d = torch.cat(lp_d, dim = -1); print(full_d.shape, file=bothout) # ! Change: output stream
         
     return full_d
 
 def get_mingd_vulnerability(args, loader, model, num_images = 1000):
+    bothout = Unbuffered() # ! Add: setup output stream
     batch_size = args.batch_size
     max_iter = num_images/batch_size
     lp_dist = [[],[],[]]
@@ -160,11 +165,12 @@ def get_mingd_vulnerability(args, loader, model, num_images = 1000):
     # lp_d is a list of size three with each element being a tensor of shape [num_images,num_classes]
     lp_d = [torch.cat(lp_dist[i], dim = 0).unsqueeze(-1) for i in range(3)]    
     # full_d = [num_images, num_classes, num_attacks]
-    full_d = torch.cat(lp_d, dim = -1); print(full_d.shape)
+    full_d = torch.cat(lp_d, dim = -1); print(full_d.shape, file=bothout) # ! Change: output stream
         
     return full_d
 
 def feature_extractor(args):
+    bothout = Unbuffered() # ! Add: setup output stream
     if args.dataset != "ImageNet":
         train_loader, test_loader = get_dataloaders(args.dataset, args.batch_size, pseudo_labels = False, train_shuffle = False)
         student, _ = get_student_teacher(args) #teacher is not needed
@@ -187,18 +193,18 @@ def feature_extractor(args):
     
     # _, train_acc  = epoch_test(args, train_loader, student)
     _, test_acc   = epoch_test(args, test_loader, student, stop = True)
-    print(f'Model: {args.model_dir} | \t Test Acc: {test_acc:.3f}')    
+    print(f'Model: {args.model_dir} | \t Test Acc: {test_acc:.3f}', file=bothout) # ! Change: output stream
     
     mapping = {'pgd':get_adversarial_vulnerability, 'topgd':get_topgd_vulnerability, 'mingd':get_mingd_vulnerability, 'rand': get_random_label_only}
 
     func = mapping[args.feature_type]
 
     test_d = func(args, test_loader, student)
-    print(test_d)
+    print(test_d, file=bothout) # ! Change: output stream
     torch.save(test_d, f"{args.file_dir}/test_{args.feature_type}_vulnerability_2.pt")
     
     train_d = func(args, train_loader, student)
-    print(train_d)
+    print(train_d, file=bothout) # ! Change: output stream
     torch.save(train_d, f"{args.file_dir}/train_{args.feature_type}_vulnerability_2.pt")
 
     
@@ -257,13 +263,15 @@ if __name__ == "__main__":
     args = params.add_config(args) if args.config_file != None else args
     print(args)
     device = torch.device("cuda:{0}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
-    root = f"../models/{args.dataset}"
+    root = f"./models/{args.dataset}" # ! Change
     model_dir = f"{root}/model_{args.model_id}"; print("Model Directory:", model_dir); args.model_dir = model_dir
-    root = f"../files/{args.dataset}"
+    root = f"./files/{args.dataset}" # ! Change
     file_dir = f"{root}/model_{args.model_id}" 
+    Path(file_dir).mkdir(exist_ok=True) # ! Add: setup output stream create dir
+    bothout = Unbuffered(file_path=f"{file_dir}/logs.txt") # ! Add: setup output stream
     if args.regressor_embed == 1: 
         file_dir += "_cr" 
-    print("File Directory:", file_dir) ; args.file_dir = file_dir
+    print(f"File Directory: {file_dir}", file=bothout) ; args.file_dir = file_dir # ! Change: output stream
     if(not os.path.exists(file_dir)):
         os.makedirs(file_dir)
        
@@ -271,7 +279,7 @@ if __name__ == "__main__":
         with open(f"{model_dir}/model_info.txt", "w") as f:
             json.dump(args.__dict__, f, indent=2)
     args.device = device
-    print(device)
+    print(device, file=bothout) # ! Change: output stream
     torch.cuda.set_device(device); torch.manual_seed(args.seed)
     
     n_class = {"CIFAR10":10, "CIFAR100":100,"AFAD":26,"SVHN":10,"ImageNet":1000}

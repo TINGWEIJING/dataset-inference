@@ -165,7 +165,7 @@ def get_student_teacher(args):
         teacher = Net_Arch(n_classes = args.num_classes, depth=deep, widen_factor=10, normalize = args.normalize, dropRate = 0.3)
         teacher = nn.DataParallel(teacher).to(args.device) if args.dataset != "SVHN" else teacher.to(args.device)
         teacher_dir = "model_teacher_normalized" if args.normalize else "model_teacher_unnormalized"
-        path = f"../models/{args.dataset}/{teacher_dir}/final"
+        path = f"./models/{args.dataset}/{teacher_dir}/final" # ! Change
         teacher = load(teacher,path)
         teacher.eval()
     
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     args = params.add_config(args) if args.config_file != None else args
     print(args)
     device = torch.device("cuda:{0}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
-    root = f"../models/{args.dataset}"
+    root = f"./models/{args.dataset}" # ! Change output path
     model_dir = f"{root}/model_{args.model_id}"; print("Model Directory:", model_dir)
     if args.concat:
         model_dir += f"concat_{args.concat_factor}"
