@@ -99,8 +99,8 @@ def get_dataloaders(dataset, batch_size, pseudo_labels = False, normalize = Fals
         tr_normalize = transforms.Normalize((0.1307,), (0.3081,)) if normalize else transforms.Lambda(lambda x: x)
         transform_train = transforms.Compose([transforms.ToTensor(), tr_normalize])
         transform_test = transforms.Compose([transforms.ToTensor(), tr_normalize]) #Change
-        mnist_train = datasets.MNIST("../../data", train=True, download=True, transform=transform_train) # ! Change
-        mnist_test = datasets.MNIST("../../data", train=False, download=True, transform=transform_test) # ! Change
+        mnist_train = datasets.MNIST("./data", train=True, download=True, transform=transform_train) # ! Change
+        mnist_test = datasets.MNIST("./data", train=False, download=True, transform=transform_test) # ! Change
         train_loader = DataLoader(mnist_train, batch_size = batch_size, shuffle=train_shuffle)
         test_loader = DataLoader(mnist_test, batch_size = batch_size, shuffle=False)
 
@@ -138,12 +138,12 @@ def get_dataloaders(dataset, batch_size, pseudo_labels = False, normalize = Fals
             # d_train = data_source("/scratch/ssd001/datasets/imagenet", split='train', download=False, transform=transform_train)
         else:
             try:
-                d_train = data_source("../data", train=True, download=True, transform=transform_train) # ! Change
-                d_test = data_source("../data", train=False, download=True, transform=transform_test) # ! Change
+                d_train = data_source("./data", train=True, download=True, transform=transform_train) # ! Change
+                d_test = data_source("./data", train=False, download=True, transform=transform_test) # ! Change
             except:
                 if concat :
-                    d_train = data_source("../data", split='train', download=True, transform=transform_train) # ! Change
-                    d_extra = data_source("../data", split='extra', download=True, transform=transform_test) # ! Change
+                    d_train = data_source("./data", split='train', download=True, transform=transform_train) # ! Change
+                    d_extra = data_source("./data", split='extra', download=True, transform=transform_test) # ! Change
                     train_len = d_train.data.shape[0]
                     new_len = int(train_len*concat_factor)
                     d_train.data = d_train.data[:new_len]
@@ -153,11 +153,11 @@ def get_dataloaders(dataset, batch_size, pseudo_labels = False, normalize = Fals
                     d_train = torch.utils.data.ConcatDataset([d_train,d_extra])
                 
                 else:
-                    d_train = data_source("../data", split='train' if not pseudo_labels else 'extra', download=True, transform=transform_train) # ! Change
+                    d_train = data_source("./data", split='train' if not pseudo_labels else 'extra', download=True, transform=transform_train) # ! Change
                     d_train.data = d_train.data[:50000]
                     d_train.labels = d_train.labels[:50000]
 
-                d_test = data_source("../data", split='test', download=True, transform=transform_test) # ! Change
+                d_test = data_source("./data", split='test', download=True, transform=transform_test) # ! Change
                 
         train_loader = DataLoader(d_train, batch_size = batch_size, shuffle=True)
         test_loader = DataLoader(d_test, batch_size = batch_size, shuffle=False)

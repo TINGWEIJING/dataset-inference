@@ -7,4 +7,14 @@ scp -P 9413 \
   "tingweijing@ssh.jiuntian.com:/data/weijing/author-DI/_author_files/CIFAR10-20220914T064003Z-001.zip"
 
 unzip CIFAR10-20220914T064003Z-001.zip -d ./
+
+zip -r reproduce_files.zip "./_reproduce_files_01"
+zip -r reproduce_models.zip "./reproduce_models"
+
+scp -P 9413 \
+  "tingweijing@ssh.jiuntian.com:/data/weijing/author-DI/reproduce_files.zip" \
+  "/home/ting/Downloads/reproduce_files.zip"
+scp -P 9413 \
+  "tingweijing@ssh.jiuntian.com:/data/weijing/author-DI/reproduce_models.zip" \
+  "/home/ting/Downloads/reproduce_models.zip"
 ```

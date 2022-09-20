@@ -9,3 +9,5 @@ code/files/
 
 # custom
 _*/
+.vscode
+*_models/

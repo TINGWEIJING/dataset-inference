@@ -209,8 +209,22 @@ def feature_extractor(args):
 
     
 def get_student_teacher(args):
+    # ! Add quick experiment model loading
+    if args.experiment == 'unrelated-dataset':
+        student = WideResNet(
+            n_classes = args.num_classes,
+            depth = 34, # deep_full for CIFAR10
+            widen_factor = 10,
+            normalize = args.normalize,
+            dropRate = 0.3,
+        )
+        student = nn.DataParallel(student).to(args.device)
+        student.train()
+
+        return student, None
+
     w_f = 2 if args.dataset == "CIFAR100" else 1
-    net_mapper = {"CIFAR10":WideResNet, "CIFAR100":WideResNet, "AFAD":resnet34, "SVHN":ResNet_8x}
+    net_mapper = {"CIFAR10":WideResNet, "CIFAR100":WideResNet, "AFAD":resnet34, "SVHN":ResNet_8x, "MNIST":WideResNet,} # ! Change: add MNIST dataset
     Net_Arch = net_mapper[args.dataset]
     teacher = None; mode = args.mode
     # ['zero-shot', 'prune', 'fine-tune', 'extract-label', 'extract-logit', 'distillation', 'teacher']
@@ -263,11 +277,11 @@ if __name__ == "__main__":
     args = params.add_config(args) if args.config_file != None else args
     print(args)
     device = torch.device("cuda:{0}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
-    root = f"./models/{args.dataset}" # ! Change
+    root = f"./models/{args.model_dataset}" # ! Change: different dataset settings for unrelated dataset setting
     model_dir = f"{root}/model_{args.model_id}"; print("Model Directory:", model_dir); args.model_dir = model_dir
-    root = f"./files/{args.dataset}" # ! Change
+    root = f"./files/{args.model_dataset}-{args.dataset}" # ! Change: different dataset settings for unrelated dataset setting
     file_dir = f"{root}/model_{args.model_id}" 
-    Path(file_dir).mkdir(exist_ok=True) # ! Add: setup output stream create dir
+    Path(file_dir).mkdir(exist_ok=True, parents=True) # ! Add: setup output stream create dir
     bothout = Unbuffered(file_path=f"{file_dir}/logs.txt") # ! Add: setup output stream
     if args.regressor_embed == 1: 
         file_dir += "_cr" 

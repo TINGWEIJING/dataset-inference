@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import sys, time, argparse, ipdb, params, glob, os, json
+from dataset import get_new_dataloader # ! Add new setting import
 import numpy as np
 import torch
 import torch.nn as nn
@@ -110,7 +111,11 @@ epoch_adversarial = epoch
 
 
 def trainer(args):
-    train_loader, test_loader = get_dataloaders(args.dataset, args.batch_size, pseudo_labels = args.pseudo_labels, concat = args.concat, concat_factor = args.concat_factor)
+    # ! Add quick settings
+    if args.experiment != "":
+        train_loader, test_loader = get_new_dataloader(args)
+    else:
+        train_loader, test_loader = get_dataloaders(args.dataset, args.batch_size, pseudo_labels = args.pseudo_labels, concat = args.concat, concat_factor = args.concat_factor)
     if args.mode == "independent":
         train_loader, test_loader = test_loader, train_loader
 
@@ -151,8 +156,22 @@ def trainer(args):
 
         
 def get_student_teacher(args):
+    # ! Add quick experiment model loading
+    if args.experiment == 'unrelated-dataset':
+        student = WideResNet(
+            n_classes = args.num_classes,
+            depth = 34, # deep_full for CIFAR10
+            widen_factor = 10,
+            normalize = args.normalize,
+            dropRate = 0.3,
+        )
+        student = nn.DataParallel(student).to(args.device)
+        student.train()
+
+        return student, None
+
     w_f = 2 if args.dataset == "CIFAR100" else 1
-    net_mapper = {"CIFAR10":WideResNet, "CIFAR100":WideResNet, "AFAD":resnet34, "SVHN":ResNet_8x}
+    net_mapper = {"CIFAR10":WideResNet, "CIFAR100":WideResNet, "AFAD":resnet34, "SVHN":WideResNet, "MNIST":WideResNet} # ! Change: add MNIST dataset, change SVHN model from ResNet_8x to WideResNet
     Net_Arch = net_mapper[args.dataset]
     mode = args.mode
     # ['zero-shot', 'fine-tune', 'extract-label', 'extract-logit', 'distillation', 'teacher']
@@ -245,7 +264,7 @@ if __name__ == "__main__":
     args.device = device
     print(device)
     torch.cuda.set_device(device); torch.manual_seed(args.seed)
-    n_class = {"CIFAR10":10, "CIFAR100":100,"AFAD":26,"SVHN":10,"ImageNet":1000}
+    n_class = {"CIFAR10":10, "CIFAR100":100,"AFAD":26,"SVHN":10,"ImageNet":1000, "MNIST":10} # ! Change: add MNIST dataset
     args.num_classes = n_class[args.dataset]
     trainer(args)
 
