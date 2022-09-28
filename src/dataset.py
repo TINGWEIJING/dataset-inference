@@ -11,6 +11,7 @@ from PIL import ImageStat
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, DataLoader, Subset
 from torchvision import datasets, transforms
+from utils.proc import GaussNoise
 
 
 def get_new_dataloader(args):
@@ -57,6 +58,43 @@ def get_new_dataloader(args):
             )  # ! Change
         else:
             raise NotImplementedError()
+        train_loader = DataLoader(train_data,
+                                  batch_size=args.batch_size,
+                                  shuffle=True
+                                  )
+        test_loader = DataLoader(test_data,
+                                 batch_size=args.batch_size,
+                                 shuffle=False)
+        return train_loader, test_loader
+    elif args.experiment == 'ssim-cifar10':
+        tr_normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)) if args.normalize else transforms.Lambda(lambda x: x)
+        transform_train = transforms.Compose([
+            transforms.ToTensor(),
+            GaussNoise(args.noise_sigma),
+            tr_normalize,
+            transforms.Lambda(lambda x: x.float()), ])
+
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            tr_normalize,
+            transforms.Lambda(lambda x: x.float())])
+
+        if args.dataset == 'CIFAR10':
+            train_data = datasets.CIFAR10(
+                "./data",
+                train=True,
+                download=True,
+                transform=transform_train
+            )  # ! Change
+            test_data = datasets.CIFAR10(
+                "./data",
+                train=False,
+                download=True,
+                transform=transform_test
+            )  # ! Change
+        else:
+            raise NotImplementedError()
+
         train_loader = DataLoader(train_data,
                                   batch_size=args.batch_size,
                                   shuffle=True

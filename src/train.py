@@ -170,6 +170,17 @@ def get_student_teacher(args):
 
         return student, None
 
+    elif args.experiment == 'ssim-cifar10':
+        student = WideResNet(
+            n_classes = args.num_classes,
+            depth = 34, # deep_full for CIFAR10
+            widen_factor = 10,
+            normalize = args.normalize,
+            dropRate = 0.3,
+        )
+        student = nn.DataParallel(student).to(args.device)
+        student.train()
+
     w_f = 2 if args.dataset == "CIFAR100" else 1
     net_mapper = {"CIFAR10":WideResNet, "CIFAR100":WideResNet, "AFAD":resnet34, "SVHN":WideResNet, "MNIST":WideResNet} # ! Change: add MNIST dataset, change SVHN model from ResNet_8x to WideResNet
     Net_Arch = net_mapper[args.dataset]
@@ -252,7 +263,7 @@ if __name__ == "__main__":
     print(args)
     device = torch.device("cuda:{0}".format(args.gpu_id) if torch.cuda.is_available() else "cpu")
     root = f"./models/{args.dataset}" # ! Change output path
-    model_dir = f"{root}/model_{args.model_id}"; print("Model Directory:", model_dir)
+    model_dir = f"{root}/model_{args.model_id}_{args.noise_sigma}"; print("Model Directory:", model_dir) # ! Change model_dir naming
     if args.concat:
         model_dir += f"concat_{args.concat_factor}"
     args.model_dir = model_dir

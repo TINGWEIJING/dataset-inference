@@ -64,8 +64,9 @@ def parse_args():
     parser.add_argument("--regressor_embed", help = "Victim Embeddings for training regressor", type = int, default = 0, choices = [0,1])
 
     # ! Add for quick experiment setting
-    parser.add_argument("--experiment", type=str, default = "", choices = ["", "unrelated-dataset"])
+    parser.add_argument("--experiment", type=str, default = "", choices = ["", "unrelated-dataset", "ssim-cifar10"])
     parser.add_argument("--model_dataset", help="MNIST/CIFAR10", type=str, default = "CIFAR10", choices = ["ImageNet","MNIST", "SVHN", "CIFAR10", "CIFAR100","AFAD"])
+    parser.add_argument("--noise_sigma", help = "Sigma value for gauss noise", type = float, default = 0.05)
 
     return parser
 
