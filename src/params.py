@@ -7,7 +7,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Adversarial Training')
     ## Basics
     parser.add_argument("--config_file", help="Configuration file containing parameters", type=str)
-    parser.add_argument("--dataset", help="MNIST/CIFAR10", type=str, default = "CIFAR10", choices = ["ImageNet","MNIST", "SVHN", "CIFAR10", "CIFAR100","AFAD"])
+    parser.add_argument("--dataset", help="MNIST/CIFAR10", type=str, default = "CIFAR10", choices = ["ImageNet","MNIST", "SVHN", "CIFAR10", "CIFAR100","AFAD", "CIFAR10-CINIC10-EXCL"]) # ! add dataset
     parser.add_argument("--model_type", help="cnn/wrn-40-2/wrn-28-10/preactresnet/resnet34",
                             type=str, default = "wrn-28-10", choices = ["cnn","wrn-40-2","wrn-28-10","preactresnet", "resnet34"])
     parser.add_argument("--gpu_id", help="Id of GPU to be used", type=int, default = 0)
@@ -64,9 +64,10 @@ def parse_args():
     parser.add_argument("--regressor_embed", help = "Victim Embeddings for training regressor", type = int, default = 0, choices = [0,1])
 
     # ! Add for quick experiment setting
-    parser.add_argument("--experiment", type=str, default = "", choices = ["", "unrelated-dataset", "ssim-cifar10"])
-    parser.add_argument("--model_dataset", help="MNIST/CIFAR10", type=str, default = "CIFAR10", choices = ["ImageNet","MNIST", "SVHN", "CIFAR10", "CIFAR100","AFAD"])
+    parser.add_argument("--experiment", type=str, default = "", choices = ["", "unrelated-dataset", "ssim-cifar10", "cifar10-cinic10-excl"])
+    parser.add_argument("--model_dataset", help="MNIST/CIFAR10, for unrelated-dataset experiment", type=str, default = "CIFAR10", choices = ["ImageNet","MNIST", "SVHN", "CIFAR10", "CIFAR100","AFAD"])
     parser.add_argument("--noise_sigma", help = "Sigma value for gauss noise", type = float, default = 0.05)
+    parser.add_argument("--combine_ratio", help = "Combine ratio for 2 diff datasets, only for cifar10-cinic10-excl experiment", type = float, default = 0.5)
 
     return parser
 
