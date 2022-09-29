@@ -9,3 +9,6 @@ code/files/
 
 # custom
 _*/
+*/__pycache__/*
+src/model_src/__pycache__
+*.pyc

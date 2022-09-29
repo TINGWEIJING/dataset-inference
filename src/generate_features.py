@@ -267,7 +267,7 @@ if __name__ == "__main__":
     model_dir = f"{root}/model_{args.model_id}"; print("Model Directory:", model_dir); args.model_dir = model_dir
     root = f"./files/{args.dataset}" # ! Change
     file_dir = f"{root}/model_{args.model_id}" 
-    Path(file_dir).mkdir(exist_ok=True) # ! Add: setup output stream create dir
+    Path(file_dir).mkdir(exist_ok=True, parents=True) # ! Add: setup output stream create dir
     bothout = Unbuffered(file_path=f"{file_dir}/logs.txt") # ! Add: setup output stream
     if args.regressor_embed == 1: 
         file_dir += "_cr" 

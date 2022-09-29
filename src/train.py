@@ -185,7 +185,7 @@ def get_student_teacher(args):
         student =  Net_Arch(n_classes = args.num_classes, depth=deep_full, widen_factor=10, normalize = args.normalize)
         student = nn.DataParallel(student).to(args.device) if args.dataset != "SVHN" else student.to(args.device)
         teacher_dir = "model_teacher_normalized" if args.normalize else "model_teacher_unnormalized"
-        path = f"../models/{args.dataset}/{teacher_dir}/final"
+        path = f"./models/{args.dataset}/{teacher_dir}/final" # ! Change model load path
         student = load(student,path)
         student.train()
         assert(args.pseudo_labels)

@@ -75,8 +75,8 @@ def get_dataloaders(dataset, batch_size, pseudo_labels = False, normalize = Fals
         if not train_shuffle:
             print("No Transform")
             transform_train = transform_test
-        cifar_train = data_source("../../data", train=True, download=True, transform=transform_train) # ! Change
-        cifar_test = data_source("../../data", train=False, download=True, transform=transform_test) # ! Change
+        cifar_train = data_source("./data", train=True, download=True, transform=transform_train) # ! Change
+        cifar_test = data_source("./data", train=False, download=True, transform=transform_test) # ! Change
         train_loader = DataLoader(cifar_train, batch_size = batch_size, shuffle=train_shuffle)
         test_loader = DataLoader(cifar_test, batch_size = batch_size, shuffle=False)
 
