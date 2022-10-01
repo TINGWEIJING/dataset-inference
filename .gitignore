@@ -12,3 +12,5 @@ _*/
 */__pycache__/*
 src/model_src/__pycache__
 *.pyc
+*_models/
+.vscode/
