@@ -308,7 +308,7 @@ if __name__ == "__main__":
     if args.experiment == "unrelated-dataset":
         root = f"./models/{args.model_dataset}" # ! Change: different dataset settings for unrelated dataset setting
     elif args.experiment == "cifar10-cinic10-excl":
-        root = f"./models/{args.dataset}" # ! Change output path
+        root = f"./models/{args.model_dataset}" # ! Change output path
     else:
         root = f"./models/{args.dataset}" # ! Change output path
 
@@ -319,6 +319,7 @@ if __name__ == "__main__":
         model_dir = f"{root}/model_{args.model_id}_{args.combine_ratio}"
     else:
         model_dir = f"{root}/model_{args.model_id}"
+    args.model_dir = model_dir
     print("Model Directory:", model_dir) # ! Change model_dir naming
 
     # ! Add quick experiment file dir path setting
@@ -326,7 +327,7 @@ if __name__ == "__main__":
         root = f"./files/{args.model_dataset}-{args.dataset}" # ! Change: different dataset settings for unrelated dataset setting
         file_dir = f"{root}/model_{args.model_id}_{args.noise_sigma}" # ! Change file_dir naming (feature output folder)
     elif args.experiment == "cifar10-cinic10-excl":
-        root = f"./files/{args.dataset}" # ! Change
+        root = f"./files/{args.model_dataset}-{args.dataset}" # ! Change
         file_dir = f"{root}/model_{args.model_id}_{args.combine_ratio}"
     else:
         root = f"./files/{args.dataset}" # ! Change
@@ -347,7 +348,7 @@ if __name__ == "__main__":
     print(device, file=bothout) # ! Change: output stream
     torch.cuda.set_device(device); torch.manual_seed(args.seed)
     
-    n_class = {"CIFAR10":10, "CIFAR100":100,"AFAD":26,"SVHN":10,"ImageNet":1000}
+    n_class = {"CIFAR10":10, "CIFAR100":100,"AFAD":26,"SVHN":10,"ImageNet":1000, "CIFAR10-CINIC10-EXCL":10}
     args.num_classes = n_class[args.dataset]
     feature_extractor(args)
 

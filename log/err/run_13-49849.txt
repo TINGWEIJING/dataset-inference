@@ -1,0 +1,1 @@
+slurmstepd: error: *** JOB 49849 ON gpu05 CANCELLED AT 2022-09-29T14:38:19 DUE TO TIME LIMIT ***

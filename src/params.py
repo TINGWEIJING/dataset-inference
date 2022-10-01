@@ -65,7 +65,7 @@ def parse_args():
 
     # ! Add for quick experiment setting
     parser.add_argument("--experiment", type=str, default = "", choices = ["", "unrelated-dataset", "ssim-cifar10", "cifar10-cinic10-excl"])
-    parser.add_argument("--model_dataset", help="MNIST/CIFAR10, for unrelated-dataset experiment", type=str, default = "CIFAR10", choices = ["ImageNet","MNIST", "SVHN", "CIFAR10", "CIFAR100","AFAD"])
+    parser.add_argument("--model_dataset", help="MNIST/CIFAR10, for unrelated-dataset, cifar10-cinic10-excl experiments", type=str, default = "CIFAR10", choices = ["ImageNet","MNIST", "SVHN", "CIFAR10", "CIFAR100","AFAD", "CIFAR10-CINIC10-EXCL"])
     parser.add_argument("--noise_sigma", help = "Sigma value for gauss noise", type = float, default = 0.05)
     parser.add_argument("--combine_ratio", help = "Combine ratio for 2 diff datasets, only for cifar10-cinic10-excl experiment", type = float, default = 0.5)
 
