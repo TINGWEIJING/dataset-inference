@@ -1,9 +1,0 @@
-File Directory: ./files/CIFAR10-CINIC10-EXCL-CIFAR10/model_teacher_normalized_0.3
-cuda:0
-File Directory: ./files/CIFAR10-CINIC10-EXCL-CIFAR10/model_teacher_normalized_0.3
-cuda:0
-File Directory: ./files/CIFAR10-CINIC10-EXCL-CIFAR10/model_teacher_normalized_0.3
-cuda:0
-File Directory: ./files/CIFAR10-CINIC10-EXCL-CIFAR10/model_teacher_normalized_0.3
-cuda:0
-Model: ./models/CIFAR10-CINIC10-EXCL/model_teacher_normalized_0.3 | 	 Test Acc: 0.534

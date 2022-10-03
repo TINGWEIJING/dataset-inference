@@ -6,8 +6,8 @@
 #SBATCH --error=./log/err/%x-%j.txt
 #SBATCH --gpus=v100s:1
 #SBATCH --nodes=1
-#SBATCH --ntasks=8
-#SBATCH --mem=8G
+#SBATCH --ntasks=12
+#SBATCH --mem=40G
 #SBATCH --qos=normal
 #SBATCH --mail-type=ALL
 #SBATCH --hint=nomultithread

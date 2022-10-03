@@ -1,7 +1,0 @@
-File Directory: ./files/CIFAR10-CINIC10-EXCL-CIFAR10/model_teacher_normalized_0.5
-cuda:0
-Model: ./models/CIFAR10-CINIC10-EXCL/model_teacher_normalized_0.5 | 	 Test Acc: 0.562
-File Directory: ./files/CIFAR10-CINIC10-EXCL-CIFAR10/model_teacher_normalized_0.5
-cuda:0
-Model: ./models/CIFAR10-CINIC10-EXCL/model_teacher_normalized_0.5 | 	 Test Acc: 0.620
-Number of steps = 105 | Failed to convert = 0 | Time taken = 14.955583095550537

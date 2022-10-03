@@ -2,7 +2,7 @@
 # nohup ./script/run_15.sh &> ./log/run_15.txt &
 # ! run in DICC v100
 # using ting/cifar-cinic branch
-# * Feature extraction mingd & rand with diff ratio combination CIFAR10 CINIC10 EXCL, batch size 500
+# * Feature extraction mingd & rand with diff ratio combination CIFAR10 CINIC10 EXCL, batch size 250
 
 echo "MINGD"
 echo "# Ratio 1"
@@ -10,7 +10,7 @@ python3 ./src/generate_features.py \
   --feature_type mingd \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -22,7 +22,7 @@ python3 ./src/generate_features.py \
   --feature_type mingd \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -34,7 +34,7 @@ python3 ./src/generate_features.py \
   --feature_type mingd \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -46,7 +46,7 @@ python3 ./src/generate_features.py \
   --feature_type mingd \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -58,7 +58,7 @@ python3 ./src/generate_features.py \
   --feature_type mingd \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -70,7 +70,7 @@ python3 ./src/generate_features.py \
   --feature_type mingd \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -82,7 +82,7 @@ python3 ./src/generate_features.py \
   --feature_type mingd \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -94,7 +94,7 @@ python3 ./src/generate_features.py \
   --feature_type mingd \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -106,7 +106,7 @@ python3 ./src/generate_features.py \
   --feature_type mingd \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -120,7 +120,7 @@ python3 ./src/generate_features.py \
   --feature_type rand \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -132,7 +132,7 @@ python3 ./src/generate_features.py \
   --feature_type rand \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -144,7 +144,7 @@ python3 ./src/generate_features.py \
   --feature_type rand \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -156,7 +156,7 @@ python3 ./src/generate_features.py \
   --feature_type rand \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -168,7 +168,7 @@ python3 ./src/generate_features.py \
   --feature_type rand \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -180,7 +180,7 @@ python3 ./src/generate_features.py \
   --feature_type rand \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -192,7 +192,7 @@ python3 ./src/generate_features.py \
   --feature_type rand \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -204,7 +204,7 @@ python3 ./src/generate_features.py \
   --feature_type rand \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
@@ -216,7 +216,7 @@ python3 ./src/generate_features.py \
   --feature_type rand \
   --dataset CIFAR10 \
   --model_dataset CIFAR10-CINIC10-EXCL \
-  --batch_size 500 \
+  --batch_size 250 \
   --mode teacher \
   --normalize 1 \
   --model_id teacher_normalized \
