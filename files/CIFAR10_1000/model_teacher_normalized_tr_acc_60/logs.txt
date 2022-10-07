@@ -1,0 +1,21 @@
+File Directory: ./files/CIFAR10_1000/model_teacher_normalized_tr_acc_60
+cuda:0
+22-10-06 15:23
+Loading model from ./models/CIFAR10/model_teacher_normalized_1000/tr_acc_60.pt
+Model: ./models/CIFAR10/model_teacher_normalized_1000 | 	 Test Acc: 0.111
+Number of steps = 500 | Failed to convert = 254 | Time taken = 546.1166100502014
+File Directory: ./files/CIFAR10_1000/model_teacher_normalized_tr_acc_60
+cuda:0
+22-10-06 15:47
+Loading model from ./models/CIFAR10/model_teacher_normalized_1000/tr_acc_60.pt
+Model: ./models/CIFAR10/model_teacher_normalized_1000 | 	 Test Acc: 0.111
+Getting random attacks
+Number of steps = 50 | Failed to convert = 47 | Time taken = 6.644443035125732
+File Directory: ./files/CIFAR10_1000/model_teacher_normalized_tr_acc_60
+cuda:0
+22-10-07 17:59
+Loading model from ./models/CIFAR10/model_teacher_normalized_1000/tr_acc_60.pt
+File Directory: ./files/CIFAR10_1000/model_teacher_normalized_tr_acc_60
+cuda:0
+22-10-07 18:01
+Loading model from ./models/CIFAR10/model_teacher_normalized_1000/tr_acc_60.pt

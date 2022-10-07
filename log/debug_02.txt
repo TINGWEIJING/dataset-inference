@@ -1,0 +1,48 @@
+# Teacher/Source/Victim model
+Namespace(alpha_l_1=1.0, alpha_l_2=0.01, alpha_l_inf=0.001, batch_size=500, combine_ratio=0.5, concat=0, concat_factor=1.0, config_file=None, data_path=None, dataset='CIFAR10', device='cuda:0', distance=None, dropRate=0.0, epochs=50, epsilon_l_1=12, epsilon_l_2=0.5, epsilon_l_inf=0.03137254901960784, experiment='', feature_type='rand', gap=0.001, gpu_id=0, imagenet_architecture='wrn', k=100, lr_max=0.1, lr_min=0.0, lr_mode=1, mode='teacher', model_dataset='CIFAR10', model_id='teacher_normalized', model_type='wrn-28-10', noise_sigma=0.05, normalize=1, num_iter=500, opt_type='SGD', path=None, pseudo_labels=0, randomize=0, regressor_embed=0, restarts=1, resume=0, resume_iter=-1, reverse_train_test=0, seed=0, smallest_adv=1)
+Model Directory: ./models/CIFAR10/model_teacher_normalized
+File Directory: ./files/CIFAR10/model_teacher_normalized
+cuda:0
+No Transform
+Files already downloaded and verified
+Files already downloaded and verified
+No Transform
+Files already downloaded and verified
+Files already downloaded and verified
+Model: ./models/CIFAR10/model_teacher_normalized | 	 Test Acc: 0.847
+Getting random attacks
+Number of steps = 50 | Failed to convert = 89 | Time taken = 20.73105812072754
+Traceback (most recent call last):
+  File "./src/generate_features.py", line 353, in <module>
+    feature_extractor(args)
+  File "./src/generate_features.py", line 202, in feature_extractor
+    test_d = func(args, test_loader, student)
+  File "./src/generate_features.py", line 83, in get_random_label_only
+    yp = model(X+delta) 
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 889, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/parallel/data_parallel.py", line 165, in forward
+    return self.module(*inputs[0], **kwargs[0])
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 889, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/home/user/tingweijing/DI-ting_3-var/src/model_src/wideresnet.py", line 157, in forward
+    attention1 = self.block1(x)
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 889, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/home/user/tingweijing/DI-ting_3-var/src/model_src/wideresnet.py", line 114, in forward
+    return self.nblockLayer(x)
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 889, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/modules/container.py", line 119, in forward
+    input = module(input)
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 889, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/home/user/tingweijing/DI-ting_3-var/src/model_src/wideresnet.py", line 91, in forward
+    x1 = self.batch_norm2(x1)
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 889, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/modules/batchnorm.py", line 135, in forward
+    return F.batch_norm(
+  File "/home/user/tingweijing/env/DIenv/lib/python3.8/site-packages/torch/nn/functional.py", line 2149, in batch_norm
+    return torch.batch_norm(
+RuntimeError: CUDA out of memory. Tried to allocate 314.00 MiB (GPU 0; 11.91 GiB total capacity; 10.36 GiB already allocated; 8.94 MiB free; 11.13 GiB reserved in total by PyTorch)

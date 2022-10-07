@@ -1,0 +1,4 @@
+File Directory: ./files/CIFAR10_1000/model_teacher_normalized_te_acc_80
+cuda:0
+22-10-03 10:00
+Loading model from ./models/CIFAR10/model_teacher_normalized_1000/te_acc_80.pt

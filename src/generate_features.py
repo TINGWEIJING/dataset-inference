@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from datetime import datetime, timedelta # ! Import datetime submodule
 from pathlib import Path # ! Add: import for Path
 import sys, time, argparse, ipdb, params, glob, os, json
 import numpy as np
@@ -174,7 +175,23 @@ def feature_extractor(args):
     if args.dataset != "ImageNet":
         train_loader, test_loader = get_dataloaders(args.dataset, args.batch_size, pseudo_labels = False, train_shuffle = False)
         student, _ = get_student_teacher(args) #teacher is not needed
-        location = f"{args.model_dir}/final.pt"
+        # ! Add quick experiment settings for different model loading
+        if args.experiment == "3-var":
+            if args.target_epoch != 0:
+                location = f"{args.model_dir}/epoch_{args.target_epoch}.pt"
+            elif args.target_tr_acc != 0:
+                location = f"{args.model_dir}/tr_acc_{args.target_tr_acc}.pt"
+            elif args.target_te_acc != 0:
+                location = f"{args.model_dir}/te_acc_{args.target_te_acc}.pt"
+            else:
+                raise Exception(f'''Missing argument for "3-var" feature extraction experiment during model loading.
+                args.target_epoch: {args.target_epoch}
+                args.target_tr_acc: {args.target_tr_acc}
+                args.target_te_acc: {args.target_te_acc}
+                ''')
+            print(f"Loading model from {location}", file=bothout)
+        else:
+            location = f"{args.model_dir}/final.pt"
         try:
             student = student.to(args.device)
             student.load_state_dict(torch.load(location, map_location = args.device)) 
@@ -192,7 +209,7 @@ def feature_extractor(args):
     student.eval()
     
     # _, train_acc  = epoch_test(args, train_loader, student)
-    _, test_acc   = epoch_test(args, test_loader, student, stop = True)
+    _, test_acc   = epoch_test(args, test_loader, student, stop = False) # ! Change: stop = False
     print(f'Model: {args.model_dir} | \t Test Acc: {test_acc:.3f}', file=bothout) # ! Change: output stream
     
     mapping = {'pgd':get_adversarial_vulnerability, 'topgd':get_topgd_vulnerability, 'mingd':get_mingd_vulnerability, 'rand': get_random_label_only}
@@ -240,6 +257,19 @@ def get_student_teacher(args):
         student = WideResNet(
             n_classes = args.num_classes,
             depth = 34, # deep_full for CIFAR10
+            widen_factor = 10,
+            normalize = args.normalize,
+            dropRate = 0.3,
+        )
+        student = nn.DataParallel(student).to(args.device)
+        student.train()
+
+        return student, None
+
+    elif args.experiment == '3-var':
+        student = WideResNet(
+            n_classes = args.num_classes,
+            depth = 28, # deep_full for CIFAR10
             widen_factor = 10,
             normalize = args.normalize,
             dropRate = 0.3,
@@ -317,6 +347,8 @@ if __name__ == "__main__":
         model_dir = f"{root}/model_{args.model_id}_{args.noise_sigma}"
     elif args.experiment == "cifar10-cinic10-excl":
         model_dir = f"{root}/model_{args.model_id}_{args.combine_ratio}"
+    elif args.experiment == "3-var":
+        model_dir = f"{root}/model_{args.model_id}_{args.target_batch_size}"
     else:
         model_dir = f"{root}/model_{args.model_id}"
     args.model_dir = model_dir
@@ -329,6 +361,22 @@ if __name__ == "__main__":
     elif args.experiment == "cifar10-cinic10-excl":
         root = f"./files/{args.model_dataset}-{args.dataset}" # ! Change
         file_dir = f"{root}/model_{args.model_id}_{args.combine_ratio}"
+    elif args.experiment == "3-var":
+        root = f"./files/{args.dataset}_{args.target_batch_size}" # ! Change
+        if args.target_epoch != 0:
+            file_dir = f"{root}/model_{args.model_id}_epoch_{args.target_epoch}"
+        elif args.target_tr_acc != 0:
+            file_dir = f"{root}/model_{args.model_id}_tr_acc_{args.target_tr_acc}"
+            pass
+        elif args.target_te_acc != 0:
+            file_dir = f"{root}/model_{args.model_id}_te_acc_{args.target_te_acc}"
+            pass
+        else:
+            raise Exception(f'''Missing argument for "3-var" feature extraction experiment.
+            args.target_epoch: {args.target_epoch}
+            args.target_tr_acc: {args.target_tr_acc}
+            args.target_te_acc: {args.target_te_acc}
+            ''')
     else:
         root = f"./files/{args.dataset}" # ! Change
         file_dir = f"{root}/model_{args.model_id}"
@@ -350,5 +398,10 @@ if __name__ == "__main__":
     
     n_class = {"CIFAR10":10, "CIFAR100":100,"AFAD":26,"SVHN":10,"ImageNet":1000, "CIFAR10-CINIC10-EXCL":10}
     args.num_classes = n_class[args.dataset]
+    # ! Implement feature extraction total time calculation
+    TIMESTAMP = (datetime.utcnow() + timedelta(hours=8)).strftime("%y-%m-%d %H:%M") # ! Malaysia timezone
+    print(TIMESTAMP, file=bothout)
+    startTime = time.process_time()
     feature_extractor(args)
-
+    endTime = time.process_time()
+    print(f"Time taken: {endTime - startTime:.2f} s", file=bothout)

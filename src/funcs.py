@@ -1,4 +1,6 @@
+import json # ! Import json module
 import os
+from pathlib import Path # ! Import Path module
 
 import numpy as np
 import torch
@@ -212,3 +214,48 @@ def load(model, model_name):
             new_dict[new_key] = dictionary[key]
         model.load_state_dict(new_dict)
     return model
+
+# ! Add model saving helper method
+def save_model(
+    model_complete_dir: str,
+    filestem: str,
+    model: torch.nn.Module,
+):
+    bothout = Unbuffered()
+
+    model_module_state_dict_dir = f"{model_complete_dir}/module_state_dict"
+    Path(model_module_state_dict_dir).mkdir(exist_ok=True, parents=True)
+
+    model_module_state_dict_file = f"{model_module_state_dict_dir}/{filestem}.pt"
+    model_state_dict_file = f"{model_complete_dir}/{filestem}.pt"
+    try:
+        torch.save(model.module.state_dict(), str(model_module_state_dict_file))
+    except Exception as e:
+        print(e, file=bothout)
+
+    try:
+        torch.save(model.state_dict(), str(model_state_dict_file))
+    except Exception as e:
+        print(e, file=bothout)
+
+# ! Add method to output model performance info in json format for 3_var experiment
+def output_3_var_info(
+    batch_size: int,
+    epoch: int,
+    tr_acc: float, # train accuracy
+    te_acc: float, # test accuracy
+    model_complete_dir: str,
+    filestem: str,
+):
+    json_output_dir = f"{model_complete_dir}/3_var_info"
+    Path(json_output_dir).mkdir(exist_ok=True, parents=True)
+    
+    json_data = {
+        "batch_size": batch_size,
+        "epoch": epoch,
+        "tr_acc": tr_acc,
+        "te_acc": te_acc,
+    }
+
+    with open(f"{json_output_dir}/{filestem}.json", "w") as write_file:
+        json.dump(json_data, write_file, indent=2)

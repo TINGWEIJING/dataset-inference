@@ -11,6 +11,7 @@ from PIL import ImageStat
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, DataLoader, Subset
 from torchvision import datasets, transforms
+from utils.logger import Unbuffered
 from utils.proc import GaussNoise
 
 
@@ -140,6 +141,44 @@ def get_new_dataloader(args):
                                  batch_size=args.batch_size,
                                  shuffle=False)
         return train_loader, test_loader
+    elif args.experiment == '3-var':
+        tr_normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)) if args.normalize else transforms.Lambda(lambda x: x)
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            # tr_normalize, # ! Force disable normalization on data layer
+            transforms.Lambda(lambda x: x.float()), ])
+
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            # tr_normalize, # ! Force disable normalization on data layer
+            transforms.Lambda(lambda x: x.float())])
+
+        if args.dataset == 'CIFAR10':
+            train_data = datasets.CIFAR10(
+                "./data",
+                train=True,
+                download=True,
+                transform=transform_train
+            )  # ! Change
+            test_data = datasets.CIFAR10(
+                "./data",
+                train=False,
+                download=True,
+                transform=transform_test
+            )  # ! Change
+        else:
+            raise NotImplementedError()
+
+        train_loader = DataLoader(train_data,
+                                  batch_size=args.batch_size,
+                                  shuffle=True
+                                  )
+        test_loader = DataLoader(test_data,
+                                 batch_size=args.batch_size,
+                                 shuffle=False)
+        return train_loader, test_loader
     else:
         raise NotImplementedError()
 
@@ -156,6 +195,7 @@ def get_cifar10_cinic10_excl_ratio_dataset(
     '''
     Train only, combination of CIFAR10 and CINIC10 excluding CIFAR10 data
     '''
+    bothout = Unbuffered() # ! Add: setup output stream
     # calculate split ratio
     cifar_num_sample = int(total_sample * ratio)
     cinic_num_sample = total_sample - cifar_num_sample
@@ -211,10 +251,10 @@ def get_cifar10_cinic10_excl_ratio_dataset(
         cinic_subset = Subset(cinic_exc_cifar_train_dataset, cinic_exc_cifar_train_idx)
 
         # TODO: Remove after debugging
-        print(f"cifar_num_sample: {cifar_num_sample}")
-        print(f"cinic_num_sample: {cinic_num_sample}")
-        print(f"cifar_subset: {len(cifar_subset)}")
-        print(f"cinic_subset: {len(cinic_subset)}")
+        print(f"cifar_num_sample: {cifar_num_sample}", file=bothout)
+        print(f"cinic_num_sample: {cinic_num_sample}", file=bothout)
+        print(f"cifar_subset: {len(cifar_subset)}", file=bothout)
+        print(f"cinic_subset: {len(cinic_subset)}", file=bothout)
 
         # combine together
         train_concate_dataset = ConcatDataset([
@@ -223,6 +263,6 @@ def get_cifar10_cinic10_excl_ratio_dataset(
         ])
 
     # TODO: Remove after debugging
-    print(f"train_concate_dataset: {len(train_concate_dataset)}")
+    print(f"train_concate_dataset: {len(train_concate_dataset)}", file=bothout)
 
     return train_concate_dataset

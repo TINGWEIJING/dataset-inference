@@ -64,10 +64,59 @@ def parse_args():
     parser.add_argument("--regressor_embed", help = "Victim Embeddings for training regressor", type = int, default = 0, choices = [0,1])
 
     # ! Add for quick experiment setting
-    parser.add_argument("--experiment", type=str, default = "", choices = ["", "unrelated-dataset", "ssim-cifar10", "cifar10-cinic10-excl"])
-    parser.add_argument("--model_dataset", help="MNIST/CIFAR10, for unrelated-dataset, cifar10-cinic10-excl experiments", type=str, default = "CIFAR10", choices = ["ImageNet","MNIST", "SVHN", "CIFAR10", "CIFAR100","AFAD", "CIFAR10-CINIC10-EXCL"])
-    parser.add_argument("--noise_sigma", help = "Sigma value for gauss noise", type = float, default = 0.05)
-    parser.add_argument("--combine_ratio", help = "Combine ratio for 2 diff datasets, only for cifar10-cinic10-excl experiment", type = float, default = 0.5)
+    parser.add_argument("--experiment",
+                        type=str,
+                        default="",
+                        choices=["",
+                                 "unrelated-dataset",
+                                 "ssim-cifar10",
+                                 "cifar10-cinic10-excl",
+                                 "3-var", ],
+                        )
+    parser.add_argument("--model_dataset",
+                        help="MNIST/CIFAR10, for unrelated-dataset, cifar10-cinic10-excl experiments",
+                        type=str,
+                        default="CIFAR10",
+                        choices=[
+                            "ImageNet",
+                            "MNIST",
+                            "SVHN",
+                            "CIFAR10",
+                            "CIFAR100",
+                            "AFAD",
+                            "CIFAR10-CINIC10-EXCL",
+                        ],
+                        )
+    parser.add_argument("--noise_sigma",
+                        help="Sigma value for gauss noise",
+                        type=float,
+                        default=0.05,
+                        )
+    parser.add_argument("--combine_ratio",
+                        help="Combine ratio for 2 diff datasets, only for cifar10-cinic10-excl experiment",
+                        type=float,
+                        default=0.5,
+                        )
+    parser.add_argument("--target_batch_size",
+                        help="Targeted batch size model selection, only for 3-var feature extraction experiment",
+                        type=int,
+                        default=0,
+                        )
+    parser.add_argument("--target_epoch",
+                        help="Targeted epoch model selection, only for 3-var feature extraction experiment",
+                        type=int,
+                        default=0,
+                        )
+    parser.add_argument("--target_tr_acc",
+                        help="Targeted train accuracy model selection, only for 3-var feature extraction experiment",
+                        type=int,
+                        default=0,
+                        )
+    parser.add_argument("--target_te_acc",
+                        help="Targeted test accuracy model selection, only for 3-var feature extraction experiment",
+                        type=int,
+                        default=0,
+                        )
 
     return parser
 

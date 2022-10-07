@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+from datetime import datetime, timedelta # ! Import datetime submodule
+from pathlib import Path # ! Import Path module
 import sys, time, argparse, ipdb, params, glob, os, json
 from dataset import get_new_dataloader # ! Add new setting import
 import numpy as np
@@ -7,6 +9,7 @@ import torch.nn as nn
 import torch.optim as optim
 from funcs import *
 from models import *
+from utils.logger import Unbuffered # ! Add: import for Unbuffered
 
 '''Threat Models'''
 # A) complete model theft 
@@ -111,6 +114,7 @@ epoch_adversarial = epoch
 
 
 def trainer(args):
+    bothout = Unbuffered() # ! Add: setup output stream
     # ! Add quick settings
     if args.experiment != "":
         train_loader, test_loader = get_new_dataloader(args)
@@ -138,6 +142,14 @@ def trainer(args):
         t_start = args.resume_iter + 1
         student.load_state_dict(torch.load(location, map_location = device))   
 
+    # ! Add model saving for diff epoch, train acc & test acc settings
+    epoch_targets = [25 * (i+1) for i in range(40)]
+    acc_targets = [99, 98, 95, 90, 85, 80, 75, 70, 60]
+
+    epoch_target__is_saved_map = {target: False for target in epoch_targets}
+    tr_acc_target__is_saved_map = {target: False for target in acc_targets}
+    te_acc_target__is_saved_map = {target: False for target in acc_targets}
+
     train_func = epoch
     for t in range(t_start,args.epochs):  
         lr = lr_schedule(t)
@@ -145,14 +157,102 @@ def trainer(args):
         train_loss, train_acc = epoch(args, train_loader, student, teacher = teacher, lr_schedule = lr_schedule, epoch_i = t, opt = opt)
         student.eval()
         test_loss, test_acc   = epoch_test(args, test_loader, student)
-        myprint(f'Epoch: {t}, Train Loss: {train_loss:.3f} Train Acc: {train_acc:.3f} Test Acc: {test_acc:.3f}, lr: {lr:.5f}')    
+        print(f'Epoch: {t}, Train Loss: {train_loss:.3f} Train Acc: {train_acc:.3f} Test Acc: {test_acc:.3f}, lr: {lr:.5f}', file=bothout) # ! Change: output stream    
         
-        if args.dataset == "MNIST":
-            torch.save(student.state_dict(), f"{args.model_dir}/iter_{t}.pt")
-        elif (t+1)%25 == 0:
-            torch.save(student.state_dict(), f"{args.model_dir}/iter_{t}.pt")
+        if args.experiment == "":
+            if args.dataset == "MNIST":
+                torch.save(student.state_dict(), f"{args.model_dir}/iter_{t}.pt")
+            elif (t+1)%25 == 0:
+                torch.save(student.state_dict(), f"{args.model_dir}/iter_{t}.pt")
 
-    torch.save(student.state_dict(), f"{args.model_dir}/final.pt")
+        # ! Add model saving for diff epoch, train acc & test acc
+        if args.experiment == "3-var":
+            # * Diff epoch
+            for epoch_target, is_saved in epoch_target__is_saved_map.items():
+                curr_epoch = t+1
+                filestem = f'epoch_{epoch_target}'
+                if (curr_epoch == epoch_target) and (not is_saved):
+                    save_model(
+                        model_complete_dir=args.model_dir,
+                        filestem=filestem,
+                        model=student,
+                    )
+                    output_3_var_info(
+                        batch_size=args.batch_size,
+                        epoch=curr_epoch,
+                        tr_acc=train_acc,
+                        te_acc=test_acc,
+                        model_complete_dir=args.model_dir,
+                        filestem=filestem,
+                    )
+                    epoch_target__is_saved_map[epoch_target] = True
+                    print(f'Model saved for epoch {epoch_target}', file=bothout) # ! Add model saving msg
+                    break
+
+            # * Diff train acc
+            for tr_acc_target, is_saved in tr_acc_target__is_saved_map.items():
+                curr_epoch = t+1
+                filestem = f'tr_acc_{tr_acc_target}'
+                if train_acc*100 >= tr_acc_target:
+                    if not is_saved:
+                        save_model(
+                            model_complete_dir=args.model_dir,
+                            filestem=filestem,
+                            model=student,
+                        )
+                        output_3_var_info(
+                            batch_size=args.batch_size,
+                            epoch=curr_epoch,
+                            tr_acc=train_acc,
+                            te_acc=test_acc,
+                            model_complete_dir=args.model_dir,
+                            filestem=filestem,
+                        )
+                        tr_acc_target__is_saved_map[tr_acc_target] = True
+                        print(f'Model saved for tr_acc_target {tr_acc_target}', file=bothout) # ! Add model saving msg
+                        break
+                    break
+
+            # * Diff test acc
+            for te_acc_target, is_saved in te_acc_target__is_saved_map.items():
+                curr_epoch = t+1
+                filestem = f'te_acc_{te_acc_target}'
+                if test_acc*100 >= te_acc_target:
+                    if not is_saved:
+                        save_model(
+                            model_complete_dir=args.model_dir,
+                            filestem=filestem,
+                            model=student,
+                        )
+                        output_3_var_info(
+                            batch_size=args.batch_size,
+                            epoch=curr_epoch,
+                            tr_acc=train_acc,
+                            te_acc=test_acc,
+                            model_complete_dir=args.model_dir,
+                            filestem=filestem,
+                        )
+                        te_acc_target__is_saved_map[te_acc_target] = True
+                        print(f'Model saved for te_acc_target {te_acc_target}', file=bothout) # ! Add model saving msg
+                        break
+                    break
+
+    # torch.save(student.state_dict(), f"{args.model_dir}/final.pt") # ! Repace model saving code
+    save_model(
+        model_complete_dir=args.model_dir,
+        filestem='final',
+        model=student,
+    )
+    if args.experiment == "3-var":
+        output_3_var_info(
+            batch_size=args.batch_size,
+            epoch=curr_epoch,
+            tr_acc=train_acc,
+            te_acc=test_acc,
+            model_complete_dir=args.model_dir,
+            filestem='final',
+        )
+    print('Final model saved', file=bothout) # ! Add model saving msg
 
         
 def get_student_teacher(args):
@@ -187,6 +287,19 @@ def get_student_teacher(args):
         student = WideResNet(
             n_classes = args.num_classes,
             depth = 34, # deep_full for CIFAR10
+            widen_factor = 10,
+            normalize = args.normalize,
+            dropRate = 0.3,
+        )
+        student = nn.DataParallel(student).to(args.device)
+        student.train()
+
+        return student, None
+
+    elif args.experiment == '3-var':
+        student = WideResNet(
+            n_classes = args.num_classes,
+            depth = 28, # deep_full for CIFAR10
             widen_factor = 10,
             normalize = args.normalize,
             dropRate = 0.3,
@@ -289,9 +402,14 @@ if __name__ == "__main__":
         model_dir = f"{root}/model_{args.model_id}_{args.noise_sigma}"
     elif args.experiment == "cifar10-cinic10-excl":
         model_dir = f"{root}/model_{args.model_id}_{args.combine_ratio}"
+    elif args.experiment == "3-var":
+        model_dir = f"{root}/model_{args.model_id}_{args.batch_size}"
     else:
         model_dir = f"{root}/model_{args.model_id}"
-    print("Model Directory:", model_dir) # ! Change model_dir naming
+
+    Path(model_dir).mkdir(exist_ok=True, parents=True) # ! Add: setup output stream create dir
+    bothout = Unbuffered(file_path=f"{model_dir}/logs.txt") # ! Add: setup output stream
+    print("Model Directory:", model_dir, file=bothout) # ! Change model_dir naming & output stream
 
     if args.concat:
         model_dir += f"concat_{args.concat_factor}"
@@ -302,9 +420,15 @@ if __name__ == "__main__":
     with open(f"{model_dir}/model_info.txt", "w") as f:
         json.dump(args.__dict__, f, indent=2)
     args.device = device
-    print(device)
+    print(device, file=bothout) # ! Change: output stream
     torch.cuda.set_device(device); torch.manual_seed(args.seed)
     n_class = {"CIFAR10":10, "CIFAR100":100,"AFAD":26,"SVHN":10,"ImageNet":1000, "MNIST":10, "CIFAR10-CINIC10-EXCL":10} # ! Change: add MNIST dataset
     args.num_classes = n_class[args.dataset]
+    # ! Implement model training total time calculation
+    TIMESTAMP = (datetime.utcnow() + timedelta(hours=8)).strftime("%y-%m-%d %H:%M") # ! Malaysia timezone
+    print(TIMESTAMP, file=bothout)
+    startTime = time.process_time()
     trainer(args)
+    endTime = time.process_time()
+    print(f"Time taken: {endTime - startTime:.2f} s", file=bothout)
 
