@@ -116,7 +116,9 @@ epoch_adversarial = epoch
 def trainer(args):
     bothout = Unbuffered() # ! Add: setup output stream
     # ! Add quick settings
-    if args.experiment != "":
+    if args.experiment == "normalization":
+        train_loader, test_loader = get_dataloaders(args.dataset, args.batch_size, normalize=args.data_normalize, pseudo_labels = args.pseudo_labels, concat = args.concat, concat_factor = args.concat_factor)
+    elif args.experiment != "":
         train_loader, test_loader = get_new_dataloader(args)
     else:
         train_loader, test_loader = get_dataloaders(args.dataset, args.batch_size, pseudo_labels = args.pseudo_labels, concat = args.concat, concat_factor = args.concat_factor)
@@ -404,6 +406,10 @@ if __name__ == "__main__":
         model_dir = f"{root}/model_{args.model_id}_{args.combine_ratio}"
     elif args.experiment == "3-var":
         model_dir = f"{root}/model_{args.model_id}_{args.batch_size}"
+    elif args.experiment == "normalization":
+        model_normalize_str = "model-normalized" if args.normalize == 1 else "model-unnormalized"
+        data_normalize_str = "data-normalized" if args.data_normalize == 1 else "data-unnormalized"
+        model_dir = f"{root}/model_{args.model_id}_{model_normalize_str}_{data_normalize_str}"
     else:
         model_dir = f"{root}/model_{args.model_id}"
 

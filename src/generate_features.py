@@ -279,6 +279,23 @@ def get_student_teacher(args):
 
         return student, None
 
+    elif args.experiment == 'normalization':
+        mode = args.mode
+        if mode == "independent":
+            student = WideResNet(n_classes = args.num_classes, depth=16, widen_factor=1, normalize = args.load_model_normalize, dropRate = 0.3)
+        elif mode == "pre-act-18":
+            student = PreActResNet18(num_classes = args.num_classes, normalize = args.load_model_normalize)
+        else:
+            student = WideResNet(
+                n_classes = args.num_classes,
+                depth = 28, # deep_full for CIFAR10
+                widen_factor = 10,
+                normalize = args.load_model_normalize,
+                dropRate = 0.3,
+            )
+
+        return student, None
+
     w_f = 2 if args.dataset == "CIFAR100" else 1
     net_mapper = {"CIFAR10":WideResNet, "CIFAR100":WideResNet, "AFAD":resnet34, "SVHN":ResNet_8x, "MNIST":WideResNet,} # ! Change: add MNIST dataset
     Net_Arch = net_mapper[args.dataset]
@@ -349,6 +366,10 @@ if __name__ == "__main__":
         model_dir = f"{root}/model_{args.model_id}_{args.combine_ratio}"
     elif args.experiment == "3-var":
         model_dir = f"{root}/model_{args.model_id}_{args.target_batch_size}"
+    elif args.experiment == "normalization":
+        model_normalize_str = "model-normalized" if args.model_normalize == 1 else "model-unnormalized"
+        data_normalize_str = "data-normalized" if args.data_normalize == 1 else "data-unnormalized"
+        model_dir = f"{root}/model_{args.model_id}_{model_normalize_str}_{data_normalize_str}"
     else:
         model_dir = f"{root}/model_{args.model_id}"
     args.model_dir = model_dir
@@ -377,6 +398,12 @@ if __name__ == "__main__":
             args.target_tr_acc: {args.target_tr_acc}
             args.target_te_acc: {args.target_te_acc}
             ''')
+    elif args.experiment == "normalization":
+        model_normalize_str = "model-normalized" if args.model_normalize == 1 else "model-unnormalized"
+        data_normalize_str = "data-normalized" if args.data_normalize == 1 else "data-unnormalized"
+        load_model_normalize_str = "load-model-normalized" if args.load_model_normalize == 1 else "load-model-unnormalized"
+        root = f"./files/{args.dataset}" # ! Change
+        file_dir = f"{root}/model_{args.model_id}_{model_normalize_str}_{data_normalize_str}_{load_model_normalize_str}"
     else:
         root = f"./files/{args.dataset}" # ! Change
         file_dir = f"{root}/model_{args.model_id}"

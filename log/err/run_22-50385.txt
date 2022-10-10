@@ -1,0 +1,1 @@
+slurmstepd: error: *** JOB 50385 ON gpu05 CANCELLED AT 2022-10-09T19:06:46 ***

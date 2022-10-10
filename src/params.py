@@ -71,7 +71,9 @@ def parse_args():
                                  "unrelated-dataset",
                                  "ssim-cifar10",
                                  "cifar10-cinic10-excl",
-                                 "3-var", ],
+                                 "3-var",
+                                 "normalization",
+                                ],
                         )
     parser.add_argument("--model_dataset",
                         help="MNIST/CIFAR10, for unrelated-dataset, cifar10-cinic10-excl experiments",
@@ -116,6 +118,24 @@ def parse_args():
                         help="Targeted test accuracy model selection, only for 3-var feature extraction experiment",
                         type=int,
                         default=0,
+                        )
+    parser.add_argument("--data_normalize",
+                        help="Enable data layer normalization, only for normalization experiment",
+                        type=int,
+                        default=0,
+                        choices = [0, 1],
+                        )
+    parser.add_argument("--model_normalize",
+                        help="Determine Load model path name, only for feature extraction normalization experiment",
+                        type=int,
+                        default=0,
+                        choices = [0, 1],
+                        )
+    parser.add_argument("--load_model_normalize",
+                        help="Enable model layer normalization during loading, only for feature extraction normalization experiment",
+                        type=int,
+                        default=0,
+                        choices = [0, 1],
                         )
 
     return parser

@@ -1,4 +1,0 @@
-File Directory: ./files/CIFAR10_1000/model_teacher_normalized_epoch_100
-cuda:0
-22-10-03 09:59
-Loading model from ./models/CIFAR10/model_teacher_normalized_1000/epoch_100.pt
