@@ -14,11 +14,11 @@ from torchvision import datasets, transforms
 from utils.proc import GaussNoise
 
 
-def get_new_dataloader(args):
+def get_new_dataloader(args, data_normalize=False):
     # ! Add quick experiment model loading
     if args.experiment == 'unrelated-dataset':
         # ! Use same normalize for both CIFAR & SVHN
-        tr_normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)) if args.normalize else transforms.Lambda(lambda x: x)
+        tr_normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)) if data_normalize else transforms.Lambda(lambda x: x)
         transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
@@ -67,7 +67,7 @@ def get_new_dataloader(args):
                                  shuffle=False)
         return train_loader, test_loader
     elif args.experiment == 'ssim-cifar10':
-        tr_normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)) if args.normalize else transforms.Lambda(lambda x: x)
+        tr_normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)) if data_normalize else transforms.Lambda(lambda x: x)
         transform_train = transforms.Compose([
             transforms.ToTensor(),
             GaussNoise(args.noise_sigma),
@@ -104,7 +104,7 @@ def get_new_dataloader(args):
                                  shuffle=False)
         return train_loader, test_loader
     elif args.experiment == 'cifar10-cinic10-excl':
-        tr_normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)) if args.normalize else transforms.Lambda(lambda x: x)
+        tr_normalize = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)) if data_normalize else transforms.Lambda(lambda x: x)
         transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),

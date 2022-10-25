@@ -213,7 +213,7 @@ def get_student_teacher(args):
     if args.experiment == 'unrelated-dataset':
         student = WideResNet(
             n_classes = args.num_classes,
-            depth = 34, # deep_full for CIFAR10
+            depth = 28, # deep_full for CIFAR10
             widen_factor = 10,
             normalize = args.normalize,
             dropRate = 0.3,
@@ -226,7 +226,7 @@ def get_student_teacher(args):
     elif args.experiment == 'ssim-cifar10':
         student = WideResNet(
             n_classes = args.num_classes,
-            depth = 34, # deep_full for CIFAR10
+            depth = 28, # deep_full for CIFAR10
             widen_factor = 10,
             normalize = args.normalize,
             dropRate = 0.3,
@@ -239,7 +239,7 @@ def get_student_teacher(args):
     elif args.experiment == 'cifar10-cinic10-excl':
         student = WideResNet(
             n_classes = args.num_classes,
-            depth = 34, # deep_full for CIFAR10
+            depth = 28, # deep_full for CIFAR10
             widen_factor = 10,
             normalize = args.normalize,
             dropRate = 0.3,
