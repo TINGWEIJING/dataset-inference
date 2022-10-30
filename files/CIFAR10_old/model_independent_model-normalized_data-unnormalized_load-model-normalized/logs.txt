@@ -1,0 +1,7 @@
+File Directory: ./files/CIFAR10/model_independent_model-normalized_data-unnormalized_load-model-normalized
+cuda:0
+22-10-12 23:15
+Model: ./models/CIFAR10/model_independent_model-normalized_data-unnormalized | 	 Test Acc: 1.000
+Number of steps = 48 | Failed to convert = 0 | Time taken = 2.6459076404571533
+Number of steps = 209 | Failed to convert = 0 | Time taken = 6.761386156082153
+Number of steps = 31 | Failed to convert = 0 | Time taken = 1.6683039665222168

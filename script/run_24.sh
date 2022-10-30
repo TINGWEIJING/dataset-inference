@@ -1,5 +1,5 @@
 #!/bin/sh
-# nohup ./script/run_22.sh &> ./log/run_22.txt &
+# nohup ./script/run_24.sh &> ./log/run_24.txt &
 # ! run in DICC v100
 # using ting/normalization branch
 # * Rerun Mingd & Rand Feature extraction on trained model (independent & preactresnet) with/without model normalize and data normalize, using unnoramlized dataset & unnoramalized loaded model

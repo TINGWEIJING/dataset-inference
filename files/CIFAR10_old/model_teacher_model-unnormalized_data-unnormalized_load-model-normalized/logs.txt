@@ -1,0 +1,8 @@
+File Directory: ./files/CIFAR10/model_teacher_model-unnormalized_data-unnormalized_load-model-normalized
+cuda:0
+22-10-12 23:11
+Model: ./models/CIFAR10/model_teacher_model-unnormalized_data-unnormalized | 	 Test Acc: 0.392
+Number of steps = 49 | Failed to convert = 0 | Time taken = 9.842699527740479
+Number of steps = 85 | Failed to convert = 0 | Time taken = 18.795128107070923
+Number of steps = 385 | Failed to convert = 0 | Time taken = 47.88146924972534
+Number of steps = 136 | Failed to convert = 0 | Time taken = 18.46435832977295
