@@ -1,0 +1,38 @@
+{
+  "model_teacher_normalized_0.0": {
+    "train_acc": 0.8003,
+    "test_acc": 0.7983
+  },
+  "model_teacher_normalized_0.1": {
+    "train_acc": 0.89872,
+    "test_acc": 0.8859
+  },
+  "model_teacher_normalized_0.2": {
+    "train_acc": 0.92894,
+    "test_acc": 0.9113
+  },
+  "model_teacher_normalized_0.3": {
+    "train_acc": 0.94418,
+    "test_acc": 0.9164
+  },
+  "model_teacher_normalized_0.5": {
+    "train_acc": 0.96552,
+    "test_acc": 0.926
+  },
+  "model_teacher_normalized_0.7": {
+    "train_acc": 0.98104,
+    "test_acc": 0.9299
+  },
+  "model_teacher_normalized_0.8": {
+    "train_acc": 0.9875,
+    "test_acc": 0.9365
+  },
+  "model_teacher_normalized_0.9": {
+    "train_acc": 0.99446,
+    "test_acc": 0.9417
+  },
+  "model_teacher_normalized_1.0": {
+    "train_acc": 1.0,
+    "test_acc": 0.9424
+  }
+}
