@@ -19,3 +19,457 @@ File Directory: ./files/CIFAR10_1000/model_teacher_normalized_tr_acc_75
 cuda:0
 22-10-07 18:01
 Loading model from ./models/CIFAR10/model_teacher_normalized_1000/tr_acc_75.pt
+File Directory: ./files/CIFAR10_1000/model_teacher_normalized_tr_acc_75
+cuda:0
+22-10-08 00:40
+Loading model from ./models/CIFAR10/model_teacher_normalized_1000/tr_acc_75.pt
+Model: ./models/CIFAR10/model_teacher_normalized_1000 | 	 Test Acc: 0.577
+Number of steps = 220 | Failed to convert = 0 | Time taken = 40.45674920082092
+Number of steps = 402 | Failed to convert = 0 | Time taken = 73.50393056869507
+Number of steps = 83 | Failed to convert = 0 | Time taken = 12.196682214736938
+Number of steps = 262 | Failed to convert = 0 | Time taken = 31.840898990631104
+Number of steps = 34 | Failed to convert = 0 | Time taken = 7.73516583442688
+Number of steps = 340 | Failed to convert = 0 | Time taken = 38.07517862319946
+Number of steps = 114 | Failed to convert = 0 | Time taken = 12.662960529327393
+Number of steps = 160 | Failed to convert = 0 | Time taken = 24.837605476379395
+Number of steps = 170 | Failed to convert = 0 | Time taken = 33.47941470146179
+Number of steps = 211 | Failed to convert = 0 | Time taken = 43.335917711257935
+Number of steps = 500 | Failed to convert = 7 | Time taken = 136.57069039344788
+Number of steps = 500 | Failed to convert = 22 | Time taken = 219.2581536769867
+Number of steps = 262 | Failed to convert = 0 | Time taken = 42.42972469329834
+Number of steps = 500 | Failed to convert = 6 | Time taken = 104.88506579399109
+Number of steps = 133 | Failed to convert = 0 | Time taken = 26.379030466079712
+Number of steps = 500 | Failed to convert = 2 | Time taken = 113.63502883911133
+Number of steps = 486 | Failed to convert = 0 | Time taken = 46.457558155059814
+Number of steps = 500 | Failed to convert = 1 | Time taken = 85.0785961151123
+Number of steps = 500 | Failed to convert = 1 | Time taken = 113.48223948478699
+Number of steps = 500 | Failed to convert = 4 | Time taken = 142.1845576763153
+Number of steps = 500 | Failed to convert = 18 | Time taken = 53.982882261276245
+Number of steps = 500 | Failed to convert = 4 | Time taken = 50.7043833732605
+Number of steps = 39 | Failed to convert = 0 | Time taken = 8.98091459274292
+Number of steps = 344 | Failed to convert = 0 | Time taken = 26.86504101753235
+Number of steps = 30 | Failed to convert = 0 | Time taken = 5.851145267486572
+Number of steps = 483 | Failed to convert = 0 | Time taken = 29.123528480529785
+Number of steps = 107 | Failed to convert = 0 | Time taken = 9.499680757522583
+Number of steps = 119 | Failed to convert = 0 | Time taken = 18.092575550079346
+Number of steps = 500 | Failed to convert = 1 | Time taken = 29.87704038619995
+Number of steps = 500 | Failed to convert = 1 | Time taken = 36.05867385864258
+Number of steps = 177 | Failed to convert = 0 | Time taken = 39.61267805099487
+Number of steps = 268 | Failed to convert = 0 | Time taken = 70.35075235366821
+Number of steps = 85 | Failed to convert = 0 | Time taken = 13.525504112243652
+Number of steps = 172 | Failed to convert = 0 | Time taken = 32.03112506866455
+Number of steps = 63 | Failed to convert = 0 | Time taken = 7.975450038909912
+Number of steps = 251 | Failed to convert = 0 | Time taken = 39.34302568435669
+Number of steps = 104 | Failed to convert = 0 | Time taken = 13.098644495010376
+Number of steps = 120 | Failed to convert = 0 | Time taken = 23.99673557281494
+Number of steps = 200 | Failed to convert = 0 | Time taken = 35.345505237579346
+Number of steps = 231 | Failed to convert = 0 | Time taken = 42.63515329360962
+Number of steps = 500 | Failed to convert = 3 | Time taken = 137.5859091281891
+Number of steps = 500 | Failed to convert = 16 | Time taken = 218.67968201637268
+Number of steps = 299 | Failed to convert = 0 | Time taken = 47.04522109031677
+Number of steps = 500 | Failed to convert = 7 | Time taken = 112.63237619400024
+Number of steps = 233 | Failed to convert = 0 | Time taken = 27.927905797958374
+Number of steps = 500 | Failed to convert = 4 | Time taken = 125.06255912780762
+Number of steps = 500 | Failed to convert = 1 | Time taken = 48.50492334365845
+Number of steps = 385 | Failed to convert = 0 | Time taken = 83.25412654876709
+Number of steps = 500 | Failed to convert = 4 | Time taken = 118.17418503761292
+Number of steps = 463 | Failed to convert = 0 | Time taken = 139.91289830207825
+Number of steps = 500 | Failed to convert = 18 | Time taken = 56.75374746322632
+Number of steps = 500 | Failed to convert = 6 | Time taken = 53.62415361404419
+Number of steps = 50 | Failed to convert = 0 | Time taken = 10.102105617523193
+Number of steps = 500 | Failed to convert = 1 | Time taken = 32.145084619522095
+Number of steps = 49 | Failed to convert = 0 | Time taken = 6.067418813705444
+Number of steps = 500 | Failed to convert = 2 | Time taken = 32.79035425186157
+Number of steps = 117 | Failed to convert = 0 | Time taken = 10.098907232284546
+Number of steps = 75 | Failed to convert = 0 | Time taken = 17.619919776916504
+Number of steps = 178 | Failed to convert = 0 | Time taken = 25.93395161628723
+Number of steps = 500 | Failed to convert = 2 | Time taken = 37.127131938934326
+torch.Size([1000, 10, 3])
+tensor([[[3.6000e-02, 9.1719e-01, 2.1695e+01],
+         [4.2000e-02, 1.0430e+00, 2.5314e+01],
+         [1.1000e-02, 3.8208e-01, 7.0000e+00],
+         ...,
+         [4.1000e-02, 9.5138e-01, 2.2811e+01],
+         [1.6000e-02, 5.1496e-01, 1.0000e+01],
+         [4.7000e-02, 1.0947e+00, 2.6795e+01]],
+
+        [[1.4000e-02, 4.8555e-01, 9.9439e+00],
+         [1.7000e-02, 5.9571e-01, 1.1873e+01],
+         [2.4000e-02, 7.2701e-01, 1.8313e+01],
+         ...,
+         [4.9000e-02, 1.3005e+00, 4.0307e+01],
+         [0.0000e+00, 0.0000e+00, 0.0000e+00],
+         [3.9000e-02, 8.8638e-01, 2.2235e+01]],
+
+        [[2.0000e-03, 3.9903e-02, 1.0000e+00],
+         [3.0000e-03, 9.9188e-02, 2.0000e+00],
+         [9.0000e-03, 2.3759e-01, 5.7000e+00],
+         ...,
+         [1.6000e-02, 4.3636e-01, 1.0777e+01],
+         [0.0000e+00, 0.0000e+00, 0.0000e+00],
+         [1.6000e-02, 3.8399e-01, 1.0480e+01]],
+
+        ...,
+
+        [[0.0000e+00, 0.0000e+00, 0.0000e+00],
+         [2.0000e-03, 7.9499e-02, 2.0000e+00],
+         [1.2000e-02, 3.8616e-01, 8.8967e+00],
+         ...,
+         [1.5000e-02, 4.4644e-01, 9.8578e+00],
+         [2.0000e-03, 5.9819e-02, 1.0000e+00],
+         [5.0000e-03, 1.4974e-01, 3.9578e+00]],
+
+        [[6.2000e-02, 1.4655e+00, 4.3977e+01],
+         [4.2000e-02, 1.1152e+00, 2.5750e+01],
+         [7.0000e-03, 2.2582e-01, 4.0000e+00],
+         ...,
+         [3.2000e-02, 9.4912e-01, 2.4310e+01],
+         [2.2000e-02, 7.0197e-01, 1.5800e+01],
+         [5.8000e-02, 1.4117e+00, 3.8953e+01]],
+
+        [[1.5000e-02, 3.9696e-01, 7.0000e+00],
+         [3.0000e-02, 6.9971e-01, 1.5300e+01],
+         [1.8000e-02, 5.4866e-01, 1.3440e+01],
+         ...,
+         [5.6000e-02, 1.2829e+00, 3.3120e+01],
+         [0.0000e+00, 0.0000e+00, 0.0000e+00],
+         [4.7000e-02, 9.8535e-01, 2.6800e+01]]])
+Number of steps = 242 | Failed to convert = 0 | Time taken = 46.45659041404724
+Number of steps = 287 | Failed to convert = 0 | Time taken = 73.3186719417572
+Number of steps = 63 | Failed to convert = 0 | Time taken = 13.09981107711792
+Number of steps = 200 | Failed to convert = 0 | Time taken = 31.036750555038452
+Number of steps = 38 | Failed to convert = 0 | Time taken = 7.742284774780273
+Number of steps = 195 | Failed to convert = 0 | Time taken = 35.255117416381836
+Number of steps = 86 | Failed to convert = 0 | Time taken = 12.60955262184143
+Number of steps = 142 | Failed to convert = 0 | Time taken = 24.606030464172363
+Number of steps = 286 | Failed to convert = 0 | Time taken = 40.77415752410889
+Number of steps = 132 | Failed to convert = 0 | Time taken = 44.75476622581482
+Number of steps = 500 | Failed to convert = 12 | Time taken = 154.6361379623413
+Number of steps = 500 | Failed to convert = 18 | Time taken = 224.37574672698975
+Number of steps = 229 | Failed to convert = 0 | Time taken = 44.99078607559204
+Number of steps = 500 | Failed to convert = 8 | Time taken = 106.69727087020874
+Number of steps = 129 | Failed to convert = 0 | Time taken = 25.891268968582153
+Number of steps = 500 | Failed to convert = 4 | Time taken = 114.26059174537659
+Number of steps = 318 | Failed to convert = 0 | Time taken = 43.45098662376404
+Number of steps = 500 | Failed to convert = 2 | Time taken = 85.95333504676819
+Number of steps = 500 | Failed to convert = 5 | Time taken = 128.72871446609497
+Number of steps = 500 | Failed to convert = 1 | Time taken = 150.22560286521912
+Number of steps = 500 | Failed to convert = 17 | Time taken = 60.27915573120117
+Number of steps = 500 | Failed to convert = 3 | Time taken = 51.69049286842346
+Number of steps = 349 | Failed to convert = 0 | Time taken = 16.22094750404358
+Number of steps = 500 | Failed to convert = 1 | Time taken = 31.43029761314392
+Number of steps = 28 | Failed to convert = 0 | Time taken = 5.746434450149536
+Number of steps = 500 | Failed to convert = 1 | Time taken = 30.948198080062866
+Number of steps = 63 | Failed to convert = 0 | Time taken = 9.175755262374878
+Number of steps = 500 | Failed to convert = 1 | Time taken = 25.643315315246582
+Number of steps = 128 | Failed to convert = 0 | Time taken = 27.190659761428833
+Number of steps = 500 | Failed to convert = 1 | Time taken = 37.88304829597473
+Number of steps = 239 | Failed to convert = 0 | Time taken = 38.7736382484436
+Number of steps = 285 | Failed to convert = 0 | Time taken = 64.26986932754517
+Number of steps = 52 | Failed to convert = 0 | Time taken = 12.545557260513306
+Number of steps = 384 | Failed to convert = 0 | Time taken = 37.501933574676514
+Number of steps = 65 | Failed to convert = 0 | Time taken = 8.316177129745483
+Number of steps = 240 | Failed to convert = 0 | Time taken = 36.176247358322144
+Number of steps = 88 | Failed to convert = 0 | Time taken = 13.466217756271362
+Number of steps = 106 | Failed to convert = 0 | Time taken = 22.366002082824707
+Number of steps = 500 | Failed to convert = 1 | Time taken = 40.841967821121216
+Number of steps = 270 | Failed to convert = 0 | Time taken = 42.63540697097778
+Number of steps = 500 | Failed to convert = 5 | Time taken = 130.38665890693665
+Number of steps = 500 | Failed to convert = 16 | Time taken = 197.7332763671875
+Number of steps = 225 | Failed to convert = 0 | Time taken = 44.53112530708313
+Number of steps = 500 | Failed to convert = 9 | Time taken = 117.63599824905396
+Number of steps = 291 | Failed to convert = 0 | Time taken = 28.815342903137207
+Number of steps = 500 | Failed to convert = 4 | Time taken = 114.03794026374817
+Number of steps = 319 | Failed to convert = 0 | Time taken = 46.61459159851074
+Number of steps = 359 | Failed to convert = 0 | Time taken = 77.14657521247864
+Number of steps = 500 | Failed to convert = 3 | Time taken = 115.4251036643982
+Number of steps = 500 | Failed to convert = 3 | Time taken = 133.39199829101562
+Number of steps = 500 | Failed to convert = 19 | Time taken = 54.44669461250305
+Number of steps = 500 | Failed to convert = 4 | Time taken = 48.989461183547974
+Number of steps = 60 | Failed to convert = 0 | Time taken = 9.961443901062012
+Number of steps = 348 | Failed to convert = 0 | Time taken = 30.162073850631714
+Number of steps = 112 | Failed to convert = 0 | Time taken = 7.312202453613281
+Number of steps = 500 | Failed to convert = 1 | Time taken = 29.567389965057373
+Number of steps = 81 | Failed to convert = 0 | Time taken = 9.966194152832031
+Number of steps = 500 | Failed to convert = 1 | Time taken = 25.33352255821228
+Number of steps = 500 | Failed to convert = 2 | Time taken = 31.292850017547607
+Number of steps = 500 | Failed to convert = 3 | Time taken = 36.138957262039185
+torch.Size([1000, 10, 3])
+tensor([[[4.7000e-02, 9.1427e-01, 2.1240e+01],
+         [9.6000e-02, 1.3304e+00, 2.8323e+01],
+         [8.0000e-03, 2.2507e-01, 3.9953e+00],
+         ...,
+         [2.6000e-02, 7.0186e-01, 1.3738e+01],
+         [1.7000e-02, 5.1370e-01, 9.9620e+00],
+         [3.2000e-02, 8.2550e-01, 1.5594e+01]],
+
+        [[2.9000e-02, 9.2685e-01, 2.4540e+01],
+         [3.0000e-02, 8.3328e-01, 1.9640e+01],
+         [1.0000e-03, 2.9968e-02, 1.0000e+00],
+         ...,
+         [1.5000e-02, 4.7482e-01, 1.1880e+01],
+         [3.3000e-02, 8.7920e-01, 2.4380e+01],
+         [3.6000e-02, 8.8319e-01, 2.3880e+01]],
+
+        [[8.2000e-02, 1.0938e+00, 3.1401e+01],
+         [7.7000e-02, 1.3057e+00, 3.6486e+01],
+         [3.0000e-03, 8.9519e-02, 2.0000e+00],
+         ...,
+         [9.0000e-03, 2.7487e-01, 6.9178e+00],
+         [5.9000e-02, 1.2180e+00, 3.0820e+01],
+         [6.7000e-02, 1.0951e+00, 3.3186e+01]],
+
+        ...,
+
+        [[2.5000e-02, 4.8112e-01, 1.2945e+01],
+         [5.0000e-02, 6.9925e-01, 1.8246e+01],
+         [4.9000e-02, 1.0079e+00, 2.8844e+01],
+         ...,
+         [6.0000e-03, 2.2717e-01, 5.3849e+00],
+         [2.0000e-02, 4.2886e-01, 1.1702e+01],
+         [5.0000e-03, 1.4852e-01, 3.0000e+00]],
+
+        [[9.9000e-02, 1.9043e+00, 4.1562e+01],
+         [1.1700e-01, 1.6257e+00, 3.1191e+01],
+         [4.9000e-02, 1.3341e+00, 4.6658e+01],
+         ...,
+         [1.0500e-01, 1.7230e+00, 4.0260e+01],
+         [1.0200e-01, 1.5191e+00, 3.1801e+01],
+         [4.7000e-02, 1.0626e+00, 2.0017e+01]],
+
+        [[1.5000e-02, 3.8933e-01, 9.9200e+00],
+         [2.6000e-02, 4.0769e-01, 1.0340e+01],
+         [9.0000e-03, 2.9151e-01, 5.9927e+00],
+         ...,
+         [6.0000e-03, 2.2731e-01, 5.0000e+00],
+         [4.0000e-03, 1.3913e-01, 3.0000e+00],
+         [9.0000e-03, 2.4256e-01, 4.9600e+00]]])
+Time taken: 6631.49 s
+File Directory: ./files/CIFAR10_1000/model_teacher_normalized_tr_acc_75
+cuda:0
+22-10-08 12:02
+Loading model from ./models/CIFAR10/model_teacher_normalized_1000/tr_acc_75.pt
+Model: ./models/CIFAR10/model_teacher_normalized_1000 | 	 Test Acc: 0.577
+Getting random attacks
+Number of steps = 50 | Failed to convert = 49 | Time taken = 7.388008117675781
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.240022897720337
+Number of steps = 50 | Failed to convert = 49 | Time taken = 7.456313133239746
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.31940221786499
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.342502593994141
+Number of steps = 50 | Failed to convert = 49 | Time taken = 7.17546820640564
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.443674325942993
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.2523415088653564
+Number of steps = 50 | Failed to convert = 49 | Time taken = 7.441866159439087
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.383847236633301
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.398380756378174
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.395658493041992
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.3852174282073975
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.436371803283691
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.428959369659424
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.389326095581055
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.368618011474609
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.470357656478882
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.375501394271851
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.419692516326904
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.617853164672852
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.598721504211426
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.614122629165649
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.6093785762786865
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.5558905601501465
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.616446256637573
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.570914030075073
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.644367933273315
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.6384193897247314
+Number of steps = 50 | Failed to convert = 49 | Time taken = 5.617551326751709
+Number of steps = 50 | Failed to convert = 51 | Time taken = 7.615196943283081
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.638280868530273
+Number of steps = 50 | Failed to convert = 51 | Time taken = 7.567014932632446
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.539413690567017
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.445165395736694
+Number of steps = 50 | Failed to convert = 51 | Time taken = 7.6752519607543945
+Number of steps = 50 | Failed to convert = 50 | Time taken = 7.452380180358887
+Number of steps = 50 | Failed to convert = 51 | Time taken = 7.559250593185425
+Number of steps = 50 | Failed to convert = 51 | Time taken = 7.649451494216919
+Number of steps = 50 | Failed to convert = 51 | Time taken = 7.5072197914123535
+Number of steps = 50 | Failed to convert = 50 | Time taken = 6.674315929412842
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.587505102157593
+Number of steps = 50 | Failed to convert = 49 | Time taken = 6.629570722579956
+Number of steps = 50 | Failed to convert = 50 | Time taken = 6.470795392990112
+Number of steps = 50 | Failed to convert = 50 | Time taken = 6.540759801864624
+Number of steps = 50 | Failed to convert = 50 | Time taken = 6.573246717453003
+Number of steps = 50 | Failed to convert = 50 | Time taken = 6.541377782821655
+Number of steps = 50 | Failed to convert = 50 | Time taken = 6.576084852218628
+Number of steps = 50 | Failed to convert = 50 | Time taken = 6.521814823150635
+Number of steps = 50 | Failed to convert = 50 | Time taken = 6.513898134231567
+Number of steps = 50 | Failed to convert = 51 | Time taken = 5.672505140304565
+Number of steps = 50 | Failed to convert = 51 | Time taken = 5.655162811279297
+Number of steps = 50 | Failed to convert = 50 | Time taken = 5.65826153755188
+Number of steps = 50 | Failed to convert = 51 | Time taken = 5.6764233112335205
+Number of steps = 50 | Failed to convert = 51 | Time taken = 5.62754225730896
+Number of steps = 50 | Failed to convert = 50 | Time taken = 5.6200172901153564
+Number of steps = 50 | Failed to convert = 50 | Time taken = 5.643816232681274
+Number of steps = 50 | Failed to convert = 51 | Time taken = 5.646786689758301
+Number of steps = 50 | Failed to convert = 51 | Time taken = 5.71591854095459
+Number of steps = 50 | Failed to convert = 50 | Time taken = 5.652944326400757
+torch.Size([1000, 10, 3])
+tensor([[[1.0496e-01, 3.8762e+00, 1.2536e+02],
+         [1.0497e-01, 3.2670e+00, 1.4963e+02],
+         [1.0499e-01, 3.2527e+00, 1.5024e+02],
+         ...,
+         [9.9985e-02, 3.3748e+00, 1.5212e+02],
+         [9.9985e-02, 3.0343e+00, 1.7919e+02],
+         [1.3000e-01, 4.1032e+00, 1.5063e+02]],
+
+        [[1.2500e-01, 4.3683e+00, 1.6554e+02],
+         [1.3500e-01, 3.8256e+00, 1.7026e+02],
+         [1.2995e-01, 4.1646e+00, 1.6706e+02],
+         ...,
+         [1.2991e-01, 3.8708e+00, 1.4475e+02],
+         [1.3480e-01, 3.8529e+00, 1.7356e+02],
+         [1.2497e-01, 4.4069e+00, 1.6888e+02]],
+
+        [[2.9999e-02, 1.3952e+00, 9.2365e+01],
+         [3.9971e-02, 1.1207e+00, 6.0861e+01],
+         [5.9974e-02, 1.3560e+00, 5.9378e+01],
+         ...,
+         [3.9999e-02, 1.1180e+00, 5.9759e+01],
+         [3.4994e-02, 1.9329e+00, 6.1581e+01],
+         [3.9986e-02, 1.6594e+00, 5.9215e+01]],
+
+        ...,
+
+        [[4.9989e-03, 2.7578e-01, 3.1466e+01],
+         [4.9982e-03, 2.7255e-01, 3.0635e+01],
+         [4.9918e-03, 2.7714e-01, 3.2014e+01],
+         ...,
+         [4.9991e-03, 2.7513e-01, 3.0615e+01],
+         [4.9993e-03, 2.7831e-01, 3.0647e+01],
+         [4.9996e-03, 2.7679e-01, 3.0683e+01]],
+
+        [[4.9993e-03, 2.7869e-01, 3.1376e+01],
+         [4.9985e-03, 2.7379e-01, 3.0019e+01],
+         [5.0000e-03, 2.6989e-01, 3.0645e+01],
+         ...,
+         [4.9932e-03, 2.7513e-01, 2.9827e+01],
+         [4.9955e-03, 2.7716e-01, 3.0626e+01],
+         [4.9964e-03, 2.7722e-01, 3.0687e+01]],
+
+        [[9.4961e-02, 3.2875e+00, 1.2387e+02],
+         [9.4981e-02, 3.0206e+00, 1.4937e+02],
+         [9.4991e-02, 3.0695e+00, 1.2270e+02],
+         ...,
+         [8.9953e-02, 3.0312e+00, 1.2255e+02],
+         [9.4985e-02, 3.0309e+00, 1.2291e+02],
+         [1.0500e-01, 3.1392e+00, 1.5351e+02]]])
+Getting random attacks
+Number of steps = 50 | Failed to convert = 35 | Time taken = 6.762508153915405
+Number of steps = 50 | Failed to convert = 38 | Time taken = 6.707104682922363
+Number of steps = 50 | Failed to convert = 37 | Time taken = 6.659482955932617
+Number of steps = 50 | Failed to convert = 35 | Time taken = 6.849942922592163
+Number of steps = 50 | Failed to convert = 36 | Time taken = 6.645662307739258
+Number of steps = 50 | Failed to convert = 36 | Time taken = 6.697842359542847
+Number of steps = 50 | Failed to convert = 36 | Time taken = 6.707628965377808
+Number of steps = 50 | Failed to convert = 37 | Time taken = 6.7802534103393555
+Number of steps = 50 | Failed to convert = 37 | Time taken = 6.840791940689087
+Number of steps = 50 | Failed to convert = 35 | Time taken = 6.63839316368103
+Number of steps = 50 | Failed to convert = 36 | Time taken = 5.15267276763916
+Number of steps = 50 | Failed to convert = 36 | Time taken = 5.084757328033447
+Number of steps = 50 | Failed to convert = 36 | Time taken = 5.0306713581085205
+Number of steps = 50 | Failed to convert = 35 | Time taken = 5.249933242797852
+Number of steps = 50 | Failed to convert = 35 | Time taken = 5.059357404708862
+Number of steps = 50 | Failed to convert = 34 | Time taken = 4.958117723464966
+Number of steps = 50 | Failed to convert = 35 | Time taken = 5.112522125244141
+Number of steps = 50 | Failed to convert = 36 | Time taken = 5.058028936386108
+Number of steps = 50 | Failed to convert = 35 | Time taken = 5.010688066482544
+Number of steps = 50 | Failed to convert = 36 | Time taken = 5.212493419647217
+Number of steps = 50 | Failed to convert = 37 | Time taken = 3.56396484375
+Number of steps = 50 | Failed to convert = 37 | Time taken = 3.5731351375579834
+Number of steps = 50 | Failed to convert = 37 | Time taken = 3.6126937866210938
+Number of steps = 50 | Failed to convert = 37 | Time taken = 3.5996716022491455
+Number of steps = 50 | Failed to convert = 36 | Time taken = 3.6308364868164062
+Number of steps = 50 | Failed to convert = 37 | Time taken = 3.5973856449127197
+Number of steps = 50 | Failed to convert = 37 | Time taken = 3.6505045890808105
+Number of steps = 50 | Failed to convert = 37 | Time taken = 3.5547752380371094
+Number of steps = 50 | Failed to convert = 35 | Time taken = 3.5544581413269043
+Number of steps = 50 | Failed to convert = 37 | Time taken = 3.6097426414489746
+Number of steps = 50 | Failed to convert = 45 | Time taken = 7.583699941635132
+Number of steps = 50 | Failed to convert = 46 | Time taken = 7.523784399032593
+Number of steps = 50 | Failed to convert = 45 | Time taken = 7.666574239730835
+Number of steps = 50 | Failed to convert = 45 | Time taken = 7.655455112457275
+Number of steps = 50 | Failed to convert = 45 | Time taken = 7.605687856674194
+Number of steps = 50 | Failed to convert = 45 | Time taken = 7.49478554725647
+Number of steps = 50 | Failed to convert = 46 | Time taken = 7.560179233551025
+Number of steps = 50 | Failed to convert = 43 | Time taken = 7.468745708465576
+Number of steps = 50 | Failed to convert = 46 | Time taken = 7.494112014770508
+Number of steps = 50 | Failed to convert = 45 | Time taken = 7.477997541427612
+Number of steps = 50 | Failed to convert = 43 | Time taken = 6.4689624309539795
+Number of steps = 50 | Failed to convert = 43 | Time taken = 6.503605842590332
+Number of steps = 50 | Failed to convert = 44 | Time taken = 6.331611633300781
+Number of steps = 50 | Failed to convert = 44 | Time taken = 6.37139630317688
+Number of steps = 50 | Failed to convert = 43 | Time taken = 6.393838882446289
+Number of steps = 50 | Failed to convert = 45 | Time taken = 6.464293956756592
+Number of steps = 50 | Failed to convert = 44 | Time taken = 6.446624517440796
+Number of steps = 50 | Failed to convert = 43 | Time taken = 6.365902900695801
+Number of steps = 50 | Failed to convert = 44 | Time taken = 6.489244222640991
+Number of steps = 50 | Failed to convert = 44 | Time taken = 6.307957887649536
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.407437562942505
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.41288685798645
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.41156792640686
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.43117618560791
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.411739349365234
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.374729156494141
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.424830913543701
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.43649959564209
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.419777154922485
+Number of steps = 50 | Failed to convert = 45 | Time taken = 5.404674291610718
+torch.Size([1000, 10, 3])
+tensor([[[2.5432e-01, 1.2962e+01, 9.4026e+02],
+         [2.5493e-01, 1.2854e+01, 9.3338e+02],
+         [2.5498e-01, 1.3107e+01, 9.3570e+02],
+         ...,
+         [2.5491e-01, 1.2634e+01, 9.4081e+02],
+         [2.5495e-01, 1.2414e+01, 9.2778e+02],
+         [2.5468e-01, 1.3119e+01, 9.3010e+02]],
+
+        [[4.9984e-03, 2.7238e-01, 3.0531e+01],
+         [4.9999e-03, 2.8290e-01, 3.1113e+01],
+         [4.9942e-03, 2.7077e-01, 2.9679e+01],
+         ...,
+         [4.9986e-03, 2.7464e-01, 3.0651e+01],
+         [4.9995e-03, 2.7607e-01, 3.0474e+01],
+         [4.9988e-03, 2.6969e-01, 3.0269e+01]],
+
+        [[4.9985e-03, 2.7642e-01, 3.0052e+01],
+         [4.9962e-03, 2.7441e-01, 2.9395e+01],
+         [4.9977e-03, 2.7508e-01, 3.0890e+01],
+         ...,
+         [4.9933e-03, 2.7140e-01, 3.0325e+01],
+         [4.9997e-03, 2.6900e-01, 2.9187e+01],
+         [4.9960e-03, 2.7856e-01, 3.1054e+01]],
+
+        ...,
+
+        [[5.4973e-02, 3.0223e+00, 1.2363e+02],
+         [9.9977e-02, 3.6371e+00, 1.2327e+02],
+         [8.4939e-02, 2.7561e+00, 1.2152e+02],
+         ...,
+         [7.4974e-02, 2.5319e+00, 1.2360e+02],
+         [8.4967e-02, 2.4695e+00, 1.2092e+02],
+         [7.9993e-02, 2.5076e+00, 1.5335e+02]],
+
+        [[4.9956e-03, 2.7845e-01, 3.1006e+01],
+         [4.9993e-03, 2.8149e-01, 3.0546e+01],
+         [4.9986e-03, 2.7513e-01, 3.1283e+01],
+         ...,
+         [4.9964e-03, 2.8299e-01, 3.0402e+01],
+         [4.9999e-03, 2.7600e-01, 3.0918e+01],
+         [4.9959e-03, 2.8086e-01, 3.0800e+01]],
+
+        [[3.4977e-02, 1.6353e+00, 6.1781e+01],
+         [3.4990e-02, 1.9292e+00, 6.1441e+01],
+         [5.4950e-02, 1.3862e+00, 6.1103e+01],
+         ...,
+         [2.9998e-02, 2.1852e+00, 9.2009e+01],
+         [4.9998e-02, 1.6346e+00, 6.2881e+01],
+         [6.4998e-02, 1.3887e+00, 6.3572e+01]]])
+Time taken: 785.06 s
