@@ -172,7 +172,19 @@ def get_mingd_vulnerability(args, loader, model, num_images = 1000):
 
 def feature_extractor(args):
     bothout = Unbuffered() # ! Add: setup output stream
-    if args.dataset != "ImageNet":
+    # ! Add quick settings
+    if args.experiment == 'diff-normalization':
+        train_loader, test_loader = get_dataloaders(args.dataset, args.batch_size, normalize=args.data_normalize, pseudo_labels = False, train_shuffle = False)
+        student, _ = get_student_teacher(args) #teacher is not needed
+        location = f"{args.model_dir}/final.pt"
+        try:
+            student = student.to(args.device)
+            student.load_state_dict(torch.load(location, map_location = args.device)) 
+        except:
+            student = nn.DataParallel(student).to(args.device)
+            student.load_state_dict(torch.load(location, map_location = args.device))
+
+    elif args.dataset != "ImageNet":
         train_loader, test_loader = get_dataloaders(args.dataset, args.batch_size, pseudo_labels = False, train_shuffle = False)
         student, _ = get_student_teacher(args) #teacher is not needed
         # ! Add quick experiment settings for different model loading
@@ -296,6 +308,19 @@ def get_student_teacher(args):
 
         return student, None
 
+    elif args.experiment == 'diff-normalization':
+        student = WideResNet(
+            n_classes = args.num_classes,
+            depth = 28, # deep_full for CIFAR10
+            widen_factor = 10,
+            normalize = args.load_model_normalize, # ! No model layer normalization
+            dropRate = 0.3,
+        )
+        student = nn.DataParallel(student).to(args.device)
+        student.train()
+
+        return student, None
+
     w_f = 2 if args.dataset == "CIFAR100" else 1
     net_mapper = {"CIFAR10":WideResNet, "CIFAR100":WideResNet, "AFAD":resnet34, "SVHN":ResNet_8x, "MNIST":WideResNet,} # ! Change: add MNIST dataset
     Net_Arch = net_mapper[args.dataset]
@@ -370,6 +395,8 @@ if __name__ == "__main__":
         model_normalize_str = "model-normalized" if args.model_normalize == 1 else "model-unnormalized"
         data_normalize_str = "data-normalized" if args.data_normalize == 1 else "data-unnormalized"
         model_dir = f"{root}/model_{args.model_id}_{model_normalize_str}_{data_normalize_str}"
+    elif args.experiment == "diff-normalization":
+        model_dir = f"{root}/model_{args.normalization_type}"
     else:
         model_dir = f"{root}/model_{args.model_id}"
     args.model_dir = model_dir
@@ -404,6 +431,9 @@ if __name__ == "__main__":
         load_model_normalize_str = "load-model-normalized" if args.load_model_normalize == 1 else "load-model-unnormalized"
         root = f"./files/{args.dataset}" # ! Change
         file_dir = f"{root}/model_{args.model_id}_{model_normalize_str}_{data_normalize_str}_{load_model_normalize_str}"
+    elif args.experiment == "diff-normalization":
+        root = f"./files/{args.model_dataset}" # ! Change
+        file_dir = f"{root}/model_{args.normalization_type}"
     else:
         root = f"./files/{args.dataset}" # ! Change
         file_dir = f"{root}/model_{args.model_id}"

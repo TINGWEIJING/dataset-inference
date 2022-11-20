@@ -73,6 +73,7 @@ def parse_args():
                                  "cifar10-cinic10-excl",
                                  "3-var",
                                  "normalization",
+                                 "diff-normalization",
                                 ],
                         )
     parser.add_argument("--model_dataset",
@@ -137,7 +138,22 @@ def parse_args():
                         default=0,
                         choices = [0, 1],
                         )
-
+    parser.add_argument("--normalization_type",
+                        type=str,
+                        default="data-normalization",
+                        choices=[
+                                 "data-normalization",
+                                 "normalization-without-mean",
+                                 "normalization-without-std",
+                                 "rgb-grayscale",
+                                 "min-max--1-and-1",
+                                ],
+                        )
+    parser.add_argument("--num_workers",
+                        help="For dataloader",
+                        type=int,
+                        default=0
+                        )
     return parser
 
 def add_config(args):

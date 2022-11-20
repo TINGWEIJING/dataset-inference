@@ -1,0 +1,22 @@
+{
+  "model_data-normalization": {
+    "train_acc": 0.9999,
+    "test_acc": 0.9385
+  },
+  "model_min-max--1-and-1": {
+    "train_acc": 0.7944,
+    "test_acc": 0.7617
+  },
+  "model_normalization-without-mean": {
+    "train_acc": 0.6434,
+    "test_acc": 0.6185
+  },
+  "model_normalization-without-std": {
+    "train_acc": 0.29286,
+    "test_acc": 0.2935
+  },
+  "model_rgb-grayscale": {
+    "train_acc": 0.27302,
+    "test_acc": 0.2727
+  }
+}

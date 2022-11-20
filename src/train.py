@@ -311,6 +311,19 @@ def get_student_teacher(args):
 
         return student, None
 
+    elif args.experiment == 'diff-normalization':
+        student = WideResNet(
+            n_classes = args.num_classes,
+            depth = 28, # deep_full for CIFAR10
+            widen_factor = 10,
+            normalize = False, # ! No model layer normalization
+            dropRate = 0.3,
+        )
+        student = nn.DataParallel(student).to(args.device)
+        student.train()
+
+        return student, None
+
     w_f = 2 if args.dataset == "CIFAR100" else 1
     net_mapper = {"CIFAR10":WideResNet, "CIFAR100":WideResNet, "AFAD":resnet34, "SVHN":WideResNet, "MNIST":WideResNet} # ! Change: add MNIST dataset, change SVHN model from ResNet_8x to WideResNet
     Net_Arch = net_mapper[args.dataset]
@@ -410,6 +423,8 @@ if __name__ == "__main__":
         model_normalize_str = "model-normalized" if args.normalize == 1 else "model-unnormalized"
         data_normalize_str = "data-normalized" if args.data_normalize == 1 else "data-unnormalized"
         model_dir = f"{root}/model_{args.model_id}_{model_normalize_str}_{data_normalize_str}"
+    elif args.experiment == "diff-normalization":
+        model_dir = f"{root}/model_{args.normalization_type}"
     else:
         model_dir = f"{root}/model_{args.model_id}"
 
