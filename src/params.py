@@ -74,6 +74,7 @@ def parse_args():
                                  "3-var",
                                  "normalization",
                                  "diff-normalization",
+                                 "diff-norm-value",
                                 ],
                         )
     parser.add_argument("--model_dataset",
@@ -153,6 +154,25 @@ def parse_args():
                         help="For dataloader",
                         type=int,
                         default=0
+                        )
+    parser.add_argument("--normalization_mean",
+                        help="For diff-norm-value experiment",
+                        nargs=3,
+                        type=float,
+                        default=None
+                        )
+    parser.add_argument("--normalization_std",
+                        help="For diff-norm-value experiment",
+                        nargs=3,
+                        type=float,
+                        default=None
+                        )
+    parser.add_argument("--extra_preprocessing_type",
+                        type=str,
+                        default="",
+                        choices=[
+                                 "rgb-grayscale",
+                                ],
                         )
     return parser
 

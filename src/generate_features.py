@@ -321,6 +321,19 @@ def get_student_teacher(args):
 
         return student, None
 
+    elif args.experiment == 'diff-norm-value':
+        student = WideResNet(
+            n_classes = args.num_classes,
+            depth = 28, # deep_full for CIFAR10
+            widen_factor = 10,
+            normalize = args.load_model_normalize, # ! Enable model layer normalization option
+            dropRate = 0.3,
+        )
+        student = nn.DataParallel(student).to(args.device)
+        student.train()
+
+        return student, None
+
     w_f = 2 if args.dataset == "CIFAR100" else 1
     net_mapper = {"CIFAR10":WideResNet, "CIFAR100":WideResNet, "AFAD":resnet34, "SVHN":ResNet_8x, "MNIST":WideResNet,} # ! Change: add MNIST dataset
     Net_Arch = net_mapper[args.dataset]
@@ -397,6 +410,19 @@ if __name__ == "__main__":
         model_dir = f"{root}/model_{args.model_id}_{model_normalize_str}_{data_normalize_str}"
     elif args.experiment == "diff-normalization":
         model_dir = f"{root}/model_{args.normalization_type}"
+    elif args.experiment == "diff-norm-value":
+        if args.normalization_mean != None and args.normalization_std != None:
+            mean_str = str(args.normalization_mean).replace(' ', '').replace(',', '_')[1:-1]
+            std_str = str(args.normalization_std).replace(' ', '').replace(',', '_')[1:-1]
+            model_dir = f"{root}/model_{args.extra_preprocessing_type}_mean_{mean_str}_std_{std_str}"
+        elif args.normalization_mean != None:
+            mean_str = str(args.normalization_mean).replace(' ', '').replace(',', '_')[1:-1]
+            model_dir = f"{root}/model_{args.extra_preprocessing_type}_mean_{mean_str}"
+        elif args.normalization_std != None:
+            std_str = str(args.normalization_std).replace(' ', '').replace(',', '_')[1:-1]
+            model_dir = f"{root}/model_{args.extra_preprocessing_type}_std_{std_str}"
+        else:
+            model_dir = f"{root}/model_{args.extra_preprocessing_type}_baseline"
     else:
         model_dir = f"{root}/model_{args.model_id}"
     args.model_dir = model_dir
@@ -434,6 +460,20 @@ if __name__ == "__main__":
     elif args.experiment == "diff-normalization":
         root = f"./files/{args.model_dataset}" # ! Change
         file_dir = f"{root}/model_{args.normalization_type}"
+    elif args.experiment == "diff-norm-value":
+        root = f"./files/{args.dataset}" # ! Change
+        if args.normalization_mean != None and args.normalization_std != None:
+            mean_str = str(args.normalization_mean).replace(' ', '').replace(',', '_')[1:-1]
+            std_str = str(args.normalization_std).replace(' ', '').replace(',', '_')[1:-1]
+            file_dir = f"{root}/model_{args.extra_preprocessing_type}_mean_{mean_str}_std_{std_str}"
+        elif args.normalization_mean != None:
+            mean_str = str(args.normalization_mean).replace(' ', '').replace(',', '_')[1:-1]
+            file_dir = f"{root}/model_{args.extra_preprocessing_type}_mean_{mean_str}"
+        elif args.normalization_std != None:
+            std_str = str(args.normalization_std).replace(' ', '').replace(',', '_')[1:-1]
+            file_dir = f"{root}/model_{args.extra_preprocessing_type}_std_{std_str}"
+        else:
+            file_dir = f"{root}/model_{args.extra_preprocessing_type}_baseline"
     else:
         root = f"./files/{args.dataset}" # ! Change
         file_dir = f"{root}/model_{args.model_id}"

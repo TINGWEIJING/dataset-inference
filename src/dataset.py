@@ -181,15 +181,15 @@ def get_new_dataloader(args):
         return train_loader, test_loader
     elif args.experiment == 'diff-normalization':
         if args.normalization_type == 'data-normalization':
-            preprocess_technique = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616))
+            custom_normalization = transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616))
         elif args.normalization_type == 'normalization-without-mean':
-            preprocess_technique = transforms.Normalize((0.0, 0.0, 0.0), (0.2471, 0.2435, 0.2616))
+            custom_normalization = transforms.Normalize((0.0, 0.0, 0.0), (0.2471, 0.2435, 0.2616))
         elif args.normalization_type == 'normalization-without-std':
-            preprocess_technique = transforms.Normalize((0.4914, 0.4822, 0.4465), (1.0, 1.0, 1.0))
+            custom_normalization = transforms.Normalize((0.4914, 0.4822, 0.4465), (1.0, 1.0, 1.0))
         elif args.normalization_type == 'rgb-grayscale':
-            preprocess_technique = transforms.Grayscale(num_output_channels=3)
+            custom_normalization = transforms.Grayscale(num_output_channels=3)
         elif args.normalization_type == 'min-max--1-and-1':
-            preprocess_technique = MinMaxScaler(
+            custom_normalization = MinMaxScaler(
                 channel_min=[0, 0, 0],
                 channel_max=[1, 1, 1],
                 new_channel_min=[-1, -1, -1],
@@ -202,12 +202,12 @@ def get_new_dataloader(args):
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            preprocess_technique,
+            custom_normalization,
             transforms.Lambda(lambda x: x.float()), ])
 
         transform_test = transforms.Compose([
             transforms.ToTensor(),
-            preprocess_technique,
+            custom_normalization,
             transforms.Lambda(lambda x: x.float())])
 
         if args.dataset == 'CIFAR10':
@@ -236,6 +236,63 @@ def get_new_dataloader(args):
                                  shuffle=False,
                                  num_workers=args.num_workers,
                                  )
+        return train_loader, test_loader
+    elif args.experiment == 'diff-norm-value':
+        normalization_mean = (0.4914, 0.4822, 0.4465)
+        normalization_std = (0.2471, 0.2435, 0.2616)
+
+        if args.normalization_mean != None:
+            normalization_mean = args.normalization_mean
+        if args.normalization_std != None:
+            normalization_std = args.normalization_std
+
+        custom_normalization = transforms.Normalize(normalization_mean, normalization_std)
+        print(f"Custom_normalization: {custom_normalization}")
+
+        extra_preprocessing = transforms.Lambda(lambda x: x)
+        if args.extra_preprocessing_type == 'rgb-grayscale':
+            extra_preprocessing = transforms.Grayscale(num_output_channels=3)
+        print(extra_preprocessing)
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            extra_preprocessing,
+            custom_normalization,
+            transforms.Lambda(lambda x: x.float()), ])
+
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            extra_preprocessing,
+            custom_normalization,
+            transforms.Lambda(lambda x: x.float())])
+
+        if args.dataset == 'CIFAR10':
+            train_data = datasets.CIFAR10(
+                "./data",
+                train=True,
+                download=True,
+                transform=transform_train
+            )  # ! Change
+            test_data = datasets.CIFAR10(
+                "./data",
+                train=False,
+                download=True,
+                transform=transform_test
+            )  # ! Change
+        else:
+            raise NotImplementedError()
+
+        train_loader = DataLoader(train_data,
+                                batch_size=args.batch_size,
+                                shuffle=True,
+                                num_workers=args.num_workers,
+                                )
+        test_loader = DataLoader(test_data,
+                                batch_size=args.batch_size,
+                                shuffle=False,
+                                num_workers=args.num_workers,
+                                )
         return train_loader, test_loader
     else:
         raise NotImplementedError()
