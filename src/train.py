@@ -439,18 +439,19 @@ if __name__ == "__main__":
     elif args.experiment == "diff-normalization":
         model_dir = f"{root}/model_{args.normalization_type}"
     elif args.experiment == "diff-norm-value":
+        model_mode = '' if args.mode == 'teacher' else f'_{args.mode}'
         if args.normalization_mean != None and args.normalization_std != None:
             mean_str = str(args.normalization_mean).replace(' ', '').replace(',', '_')[1:-1]
             std_str = str(args.normalization_std).replace(' ', '').replace(',', '_')[1:-1]
-            model_dir = f"{root}/model_{args.extra_preprocessing_type}_mean_{mean_str}_std_{std_str}"
+            model_dir = f"{root}/model{model_mode}_{args.extra_preprocessing_type}_mean_{mean_str}_std_{std_str}"
         elif args.normalization_mean != None:
             mean_str = str(args.normalization_mean).replace(' ', '').replace(',', '_')[1:-1]
-            model_dir = f"{root}/model_{args.extra_preprocessing_type}_mean_{mean_str}"
+            model_dir = f"{root}/model{model_mode}_{args.extra_preprocessing_type}_mean_{mean_str}"
         elif args.normalization_std != None:
             std_str = str(args.normalization_std).replace(' ', '').replace(',', '_')[1:-1]
-            model_dir = f"{root}/model_{args.extra_preprocessing_type}_std_{std_str}"
+            model_dir = f"{root}/model{model_mode}_{args.extra_preprocessing_type}_std_{std_str}"
         else:
-            model_dir = f"{root}/model_{args.extra_preprocessing_type}_baseline"
+            model_dir = f"{root}/model{model_mode}_{args.extra_preprocessing_type}_baseline"
     else:
         model_dir = f"{root}/model_{args.model_id}"
 
