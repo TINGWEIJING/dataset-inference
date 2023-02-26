@@ -1,0 +1,42 @@
+{
+  "model_independent__mean_-0.631_-0.97_-0.058": {
+    "train_acc": 0.70886,
+    "test_acc": 1.0
+  },
+  "model_independent__mean_0.365_-0.892_-0.559": {
+    "train_acc": 0.71522,
+    "test_acc": 1.0
+  },
+  "model_independent__mean_-0.668_-0.004_0.165": {
+    "train_acc": 0.70286,
+    "test_acc": 1.0
+  },
+  "model_independent__mean_-0.631_-0.648_0.624": {
+    "train_acc": 0.69852,
+    "test_acc": 1.0
+  },
+  "model_independent__mean_0.598_0.036_-0.537": {
+    "train_acc": 0.69204,
+    "test_acc": 1.0
+  },
+  "model_independent__mean_0.78_0.026_-0.51": {
+    "train_acc": 0.68854,
+    "test_acc": 1.0
+  },
+  "model_independent__mean_0.648_-0.572_0.483": {
+    "train_acc": 0.70222,
+    "test_acc": 1.0
+  },
+  "model_independent__mean_0.26_0.855_-0.536": {
+    "train_acc": 0.69668,
+    "test_acc": 1.0
+  },
+  "model_independent__mean_0.847_-0.447_0.64": {
+    "train_acc": 0.69196,
+    "test_acc": 1.0
+  },
+  "model_independent__mean_0.456_0.837_0.251": {
+    "train_acc": 0.68988,
+    "test_acc": 1.0
+  }
+}
