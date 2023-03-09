@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 #SBATCH --partition=gpu-v100s
-#SBATCH --job-name=run_54
+#SBATCH --job-name=run_53
 #SBATCH --output=./log/out/%x-%j.txt
 #SBATCH --error=./log/err/%x-%j.txt
 #SBATCH --gpus=v100s:2
@@ -16,5 +16,5 @@
 module load miniconda/miniconda3
 module load cuda/cuda-10.2
 source activate /home/user/tingweijing/env/DIenv
-source ./script/run_54.sh &> ./log/run_54.txt
+source ./script/run_53.sh &> ./log/run_53.txt
 
